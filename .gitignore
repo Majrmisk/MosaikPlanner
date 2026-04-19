@@ -1,0 +1,43 @@
+# dependencies
+/node_modules
+
+# pnpm (KEEP pnpm-lock.yaml)
+.pnpm-debug.log*
+.pnpm-store
+
+# ignore other package managers
+package-lock.json
+yarn.lock
+bun.lockb
+
+# next.js
+/.next/
+/out/
+
+# build
+/build
+
+# testing
+/coverage
+
+# env
+.env*
+
+# misc
+.DS_Store
+*.pem
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# agents
+.codex
