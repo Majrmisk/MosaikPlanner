@@ -9,10 +9,14 @@
         "lint": "eslint . --fix",
         "lint:check": "eslint .",
         "format": "prettier . --write",
-        "format:check": "prettier . --check"
+        "format:check": "prettier . --check",
+        "db:generate": "drizzle-kit generate",
+        "db:migrate": "drizzle-kit migrate",
+        "db:studio": "drizzle-kit studio"
     },
     "dependencies": {
         "@libsql/client": "^0.17.2",
+        "dotenv": "^17.4.2",
         "drizzle-orm": "^0.45.2",
         "next": "16.2.4",
         "react": "19.2.4",
