@@ -1,18 +1,24 @@
-// import { integer, sqliteTable } from 'drizzle-orm/sqlite-core';
+import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { users } from './users';
+import { widgetsTable } from './widgets';
 
-// export const dashboardItemsTable = sqliteTable('dashboard_items', {
-//     id: integer('id').primaryKey({ autoIncrement: true }),
-// });
+export const dashboardItemsTable = sqliteTable(
+    'dashboard_items',
+    {
+        id: text('id')
+            .primaryKey()
+            .$defaultFn(() => crypto.randomUUID()),
+        userId: text('user_id')
+            .notNull()
+            .references(() => users.id, { onDelete: 'cascade' }),
+        widgetId: text('widget_id')
+            .notNull()
+            .references(() => widgetsTable.id, { onDelete: 'cascade' }),
+        orderIndex: integer('order_index').notNull(),
+    },
+    (table) => [
+        uniqueIndex('dashboard_items_user_id_widget_id_idx').on(table.userId, table.widgetId),
+    ],
+);
 
-// export type DashboardItem = typeof dashboardItemsTable.$inferSelect;
-
-// dashboard_items
-// - id PK
-// - user_id FK -> users.id NOT NULL
-// - widget_id FK -> widgets.id NOT NULL
-// - order_index NOT NULL              -- last widget + 1 when newly added
-// - created_at NOT NULL
-// - updated_at NOT NULL
-
-// Constraints:
-// - UNIQUE (user_id, widget_id)
+export type DashboardItem = typeof dashboardItemsTable.$inferSelect;
