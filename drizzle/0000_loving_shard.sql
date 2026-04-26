@@ -1,11 +1,3 @@
-CREATE TABLE `dashboard_items` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE `groups` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL
-);
---> statement-breakpoint
 CREATE TABLE `account` (
 	`userId` text NOT NULL,
 	`type` text NOT NULL,
@@ -43,12 +35,4 @@ CREATE TABLE `verificationToken` (
 	`token` text NOT NULL,
 	`expires` integer NOT NULL,
 	PRIMARY KEY(`identifier`, `token`)
-);
---> statement-breakpoint
-CREATE TABLE `widget_data` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE `widgets` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL
 );
