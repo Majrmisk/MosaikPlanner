@@ -1,22 +1,54 @@
-import { integer, sqliteTable } from 'drizzle-orm/sqlite-core';
+import { relations } from 'drizzle-orm';
+import { text, sqliteTable, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { users } from './users';
 
 export const groupsTable = sqliteTable('groups', {
-    id: integer('id').primaryKey({ autoIncrement: true }),
+    id: text('id')
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    name: text('name').notNull(),
+    passwordSalt: text('password_salt').notNull(),
+    passwordHash: text('password_hash').notNull(),
+    createdByUserId: text('created_by_user_id')
+        .notNull()
+        .references(() => users.id, { onDelete: 'cascade' }),
+    color: text('color').notNull(),
 });
 
+export const groupMembersTable = sqliteTable(
+    'group_members',
+    {
+        id: text('id')
+            .primaryKey()
+            .$defaultFn(() => crypto.randomUUID()),
+        groupId: text('group_id')
+            .notNull()
+            .references(() => groupsTable.id, { onDelete: 'cascade' }),
+        userId: text('user_id')
+            .notNull()
+            .references(() => users.id, { onDelete: 'cascade' }),
+    },
+    (table) => [uniqueIndex('group_members_group_id_user_id_idx').on(table.groupId, table.userId)],
+);
+
+export const groupsRelations = relations(groupsTable, ({ one, many }) => ({
+    createdByUser: one(users, {
+        fields: [groupsTable.createdByUserId],
+        references: [users.id],
+    }),
+    members: many(groupMembersTable),
+}));
+
+export const groupMembersRelations = relations(groupMembersTable, ({ one }) => ({
+    group: one(groupsTable, {
+        fields: [groupMembersTable.groupId],
+        references: [groupsTable.id],
+    }),
+    user: one(users, {
+        fields: [groupMembersTable.userId],
+        references: [users.id],
+    }),
+}));
+
 export type Group = typeof groupsTable.$inferSelect;
-
-// groups
-// - id PK
-// - name NOT NULL
-// - password_hash NOT NULL
-// - created_by_user_id FK -> users.id NOT NULL
-// - color NOT NULL
-
-// group_members    -- create with relations
-// - id PK
-// - group_id FK -> groups.id NOT NULL
-// - user_id FK -> users.id NOT NULL
-
-// Constraints:
-// - UNIQUE (group_id, user_id)
+export type GroupMember = typeof groupMembersTable.$inferSelect;
