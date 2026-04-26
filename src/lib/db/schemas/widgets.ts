@@ -5,7 +5,6 @@ export const widgetsTable = sqliteTable('widgets', {
 });
 
 export type Widget = typeof widgetsTable.$inferSelect;
-export type NewWidget = typeof widgetsTable.$inferInsert;
 
 // widgets
 // - id PK
