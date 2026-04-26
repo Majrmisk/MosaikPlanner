@@ -1,11 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 import { db, groupMembersTable, groupsTable, users } from '@/lib/db';
-import {
-    CreateGroupMemberInput,
-    CreateGroupRecordInput,
-    JoinGroupInput,
-    UpdateGroupRecordInput,
-} from './schemas';
+import { CreateGroupMemberInput, CreateGroupRecordInput, UpdateGroupRecordInput } from './schemas';
 
 export const getGroupById = async (groupId: string) => {
     return db.query.groupsTable.findFirst({
@@ -25,7 +20,11 @@ export const createGroup = async (data: CreateGroupRecordInput) => {
 };
 
 export const updateGroup = async (groupId: string, data: UpdateGroupRecordInput) => {
-    const [group] = await db.update(groupsTable).set(data).where(eq(groupsTable.id, groupId)).returning();
+    const [group] = await db
+        .update(groupsTable)
+        .set(data)
+        .where(eq(groupsTable.id, groupId))
+        .returning();
     return group;
 };
 
