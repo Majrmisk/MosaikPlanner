@@ -1,10 +1,10 @@
-import { integer, sqliteTable } from 'drizzle-orm/sqlite-core';
+// import { integer, sqliteTable } from 'drizzle-orm/sqlite-core';
 
-export const widgetsTable = sqliteTable('widgets', {
-    id: integer('id').primaryKey({ autoIncrement: true }),
-});
+// export const widgetsTable = sqliteTable('widgets', {
+//     id: integer('id').primaryKey({ autoIncrement: true }),
+// });
 
-export type Widget = typeof widgetsTable.$inferSelect;
+// export type Widget = typeof widgetsTable.$inferSelect;
 
 // widgets
 // - id PK

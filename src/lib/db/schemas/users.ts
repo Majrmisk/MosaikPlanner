@@ -1,5 +1,7 @@
+import { relations } from 'drizzle-orm';
 import { integer, sqliteTable, text, primaryKey } from 'drizzle-orm/sqlite-core';
 import type { AdapterAccountType } from 'next-auth/adapters';
+import { groupMembersTable, groupsTable } from './groups';
 
 export const users = sqliteTable('user', {
     id: text('id')
@@ -56,5 +58,10 @@ export const verificationTokens = sqliteTable(
         }),
     ],
 );
+
+export const usersRelations = relations(users, ({ many }) => ({
+    createdGroups: many(groupsTable),
+    groupMemberships: many(groupMembersTable),
+}));
 
 export type User = typeof users.$inferSelect;

@@ -1,10 +1,10 @@
-import { integer, sqliteTable } from 'drizzle-orm/sqlite-core';
+// import { integer, sqliteTable } from 'drizzle-orm/sqlite-core';
 
-export const dashboardItemsTable = sqliteTable('dashboard_items', {
-    id: integer('id').primaryKey({ autoIncrement: true }),
-});
+// export const dashboardItemsTable = sqliteTable('dashboard_items', {
+//     id: integer('id').primaryKey({ autoIncrement: true }),
+// });
 
-export type DashboardItem = typeof dashboardItemsTable.$inferSelect;
+// export type DashboardItem = typeof dashboardItemsTable.$inferSelect;
 
 // dashboard_items
 // - id PK
