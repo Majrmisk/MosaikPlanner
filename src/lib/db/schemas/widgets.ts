@@ -1,21 +1,45 @@
-// import { integer, sqliteTable } from 'drizzle-orm/sqlite-core';
+import { relations, sql } from 'drizzle-orm';
+import { check, text, sqliteTable } from 'drizzle-orm/sqlite-core';
+import { groupsTable } from './groups';
+import { widgetDataTable } from './widget-data';
 
-// export const widgetsTable = sqliteTable('widgets', {
-//     id: integer('id').primaryKey({ autoIncrement: true }),
-// });
+export type WidgetType = 'notes' | 'calendar' | 'checklist' | 'spinner' | 'expenses';
+export type WidgetVisibility = 'private' | 'group';
 
-// export type Widget = typeof widgetsTable.$inferSelect;
+export const widgetsTable = sqliteTable(
+    'widgets',
+    {
+        id: text('id')
+            .primaryKey()
+            .$defaultFn(() => crypto.randomUUID()),
+        groupId: text('group_id').references(() => groupsTable.id, { onDelete: 'cascade' }),
+        name: text('name').notNull(),
+        type: text('type').$type<WidgetType>().notNull(),
+        visibility: text('visibility').$type<WidgetVisibility>().notNull(),
+        dataId: text('data_id')
+            .notNull()
+            .references(() => widgetDataTable.id, { onDelete: 'cascade' }),
+    },
+    (table) => [
+        check(
+            'widgets_visibility_group_id_check',
+            sql`(
+                (${table.visibility} = 'private' AND ${table.groupId} IS NULL) OR
+                (${table.visibility} = 'group' AND ${table.groupId} IS NOT NULL)
+            )`,
+        ),
+    ],
+);
 
-// widgets
-// - id PK
-// - group_id FK -> groups.id NULL     -- NULL if private widget
-// - name NOT NULL
-// - type NOT NULL                     -- notes, calendar, checklist, spinner, expenses
-// - visibility NOT NULL               -- private, group
-// - data_id FK -> widgets_data.id NOT NULL
+export const widgetsRelations = relations(widgetsTable, ({ one }) => ({
+    group: one(groupsTable, {
+        fields: [widgetsTable.groupId],
+        references: [groupsTable.id],
+    }),
+    widgetData: one(widgetDataTable, {
+        fields: [widgetsTable.dataId],
+        references: [widgetDataTable.id],
+    }),
+}));
 
-// Constraints:
-// - CHECK (
-//     (visibility = 'private' AND group_id IS NULL) OR
-//     (visibility = 'group' AND group_id IS NOT NULL)
-//   )
+export type Widget = typeof widgetsTable.$inferSelect;
