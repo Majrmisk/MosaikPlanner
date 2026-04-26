@@ -22,6 +22,12 @@ bun.lockb
 
 # env
 .env*
+!.env.example
+
+# local database
+*.db
+*.db-shm
+*.db-wal
 
 # misc
 .DS_Store
