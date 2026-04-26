@@ -5,7 +5,6 @@ export const dashboardItemsTable = sqliteTable('dashboard_items', {
 });
 
 export type DashboardItem = typeof dashboardItemsTable.$inferSelect;
-export type NewDashboardItem = typeof dashboardItemsTable.$inferInsert;
 
 // dashboard_items
 // - id PK
