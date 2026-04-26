@@ -5,7 +5,6 @@ export const groupsTable = sqliteTable('groups', {
 });
 
 export type Group = typeof groupsTable.$inferSelect;
-export type NewGroup = typeof groupsTable.$inferInsert;
 
 // groups
 // - id PK
