@@ -37,3 +37,7 @@ jobs:
 
             - name: Build project
               run: pnpm run build
+              env:
+                  TURSO_DATABASE_URL: http://localhost:8080
+                  TURSO_AUTH_TOKEN: ci
+                  AUTH_SECRET: ci-secret
