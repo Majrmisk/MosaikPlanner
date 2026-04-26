@@ -15,6 +15,13 @@
       "when": 1777223210390,
       "tag": "0001_add-group-and-members",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1777225613749,
+      "tag": "0002_add-widgets-and-widget-data",
+      "breakpoints": true
     }
   ]
 }
