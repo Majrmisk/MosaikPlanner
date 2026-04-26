@@ -1,11 +1,10 @@
-// import { integer, sqliteTable } from 'drizzle-orm/sqlite-core';
+import { text, sqliteTable } from 'drizzle-orm/sqlite-core';
 
-// export const widgetDataTable = sqliteTable('widget_data', {
-//     id: integer('id').primaryKey({ autoIncrement: true }),
-// });
+export const widgetDataTable = sqliteTable('widget_data', {
+    id: text('id')
+        .primaryKey()
+        .$defaultFn(() => crypto.randomUUID()),
+    data: text('data').notNull(),
+});
 
-// export type WidgetData = typeof widgetDataTable.$inferSelect;
-
-// widgets_data    -- one data per one widget
-// - id PK
-// - data JSON NOT NULL
+export type WidgetData = typeof widgetDataTable.$inferSelect;
