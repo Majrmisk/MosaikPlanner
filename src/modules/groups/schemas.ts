@@ -25,7 +25,6 @@ export const createGroupSchema = z.object({
     name: groupNameSchema,
     password: groupPasswordSchema,
     color: groupColorSchema,
-    createdById: userIdSchema,
 });
 
 export const createGroupRecordSchema = z.object({

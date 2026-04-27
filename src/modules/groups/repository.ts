@@ -1,50 +1,86 @@
+import 'server-only';
+
 import { and, eq } from 'drizzle-orm';
 import { db, groupMembersTable, groupsTable, users } from '@/lib/db';
-import { CreateGroupMemberInput, CreateGroupRecordInput, UpdateGroupRecordInput } from './schemas';
+import type {
+    Group as GroupRecord,
+    GroupMember as GroupMemberRecord,
+} from '@/lib/db/schemas/groups';
+import type { User } from '@/modules/users/schemas';
+import type {
+    CreateGroupMemberInput,
+    CreateGroupRecordInput,
+    Group,
+    UpdateGroupRecordInput,
+} from './schemas';
 
-export const getGroupById = async (groupId: string) => {
+export const getGroupById = async (groupId: string): Promise<GroupRecord | undefined> => {
     return db.query.groupsTable.findFirst({
         where: (table, { eq }) => eq(table.id, groupId),
     });
 };
 
-export const getGroupByName = async (groupName: string) => {
+export const getGroupByName = async (groupName: string): Promise<GroupRecord | undefined> => {
     return db.query.groupsTable.findFirst({
         where: (table, { eq }) => eq(table.name, groupName),
     });
 };
 
-export const createGroup = async (data: CreateGroupRecordInput) => {
+export const createGroup = async (data: CreateGroupRecordInput): Promise<GroupRecord> => {
     const [group] = await db.insert(groupsTable).values(data).returning();
+
+    if (!group) {
+        throw new Error('Failed to create group');
+    }
+
     return group;
 };
 
-export const updateGroup = async (groupId: string, data: UpdateGroupRecordInput) => {
+export const updateGroup = async (
+    groupId: string,
+    data: UpdateGroupRecordInput,
+): Promise<GroupRecord> => {
     const [group] = await db
         .update(groupsTable)
         .set(data)
         .where(eq(groupsTable.id, groupId))
         .returning();
+
+    if (!group) {
+        throw new Error('Failed to update group');
+    }
+
     return group;
 };
 
-export const getGroupMember = async (groupId: string, userId: string) => {
+export const getGroupMember = async (
+    groupId: string,
+    userId: string,
+): Promise<GroupMemberRecord | undefined> => {
     return db.query.groupMembersTable.findFirst({
         where: (table, { and, eq }) => and(eq(table.groupId, groupId), eq(table.userId, userId)),
     });
 };
 
-export const isUserInGroup = async (groupId: string, userId: string) => {
+export const isUserInGroup = async (groupId: string, userId: string): Promise<boolean> => {
     const membership = await getGroupMember(groupId, userId);
     return membership !== undefined;
 };
 
-export const addGroupMember = async (data: CreateGroupMemberInput) => {
+export const addGroupMember = async (data: CreateGroupMemberInput): Promise<GroupMemberRecord> => {
     const [membership] = await db.insert(groupMembersTable).values(data).returning();
+
+    if (!membership) {
+        throw new Error('Failed to add group member');
+    }
+
     return membership;
 };
 
-export const removeGroupMember = async (groupId: string, userId: string) => {
+export const removeGroupMember = async (
+    groupId: string,
+    userId: string,
+): Promise<GroupMemberRecord | undefined> => {
     const [membership] = await db
         .delete(groupMembersTable)
         .where(and(eq(groupMembersTable.groupId, groupId), eq(groupMembersTable.userId, userId)))
@@ -53,7 +89,7 @@ export const removeGroupMember = async (groupId: string, userId: string) => {
     return membership;
 };
 
-export const getUsersByGroupId = async (groupId: string) => {
+export const getUsersByGroupId = async (groupId: string): Promise<User[]> => {
     return db
         .select({
             id: users.id,
@@ -66,7 +102,7 @@ export const getUsersByGroupId = async (groupId: string) => {
         .where(eq(groupMembersTable.groupId, groupId));
 };
 
-export const getGroupsByUserId = async (userId: string) => {
+export const getGroupsByUserId = async (userId: string): Promise<Group[]> => {
     return db
         .select({
             id: groupsTable.id,
