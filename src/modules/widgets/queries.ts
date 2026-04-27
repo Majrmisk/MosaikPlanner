@@ -1,0 +1,1 @@
+// TODO add widget-type-specific data read queries here
