@@ -21,13 +21,13 @@ export const groupWithMembersSchema = groupSchema.extend({
     members: z.array(userSchema),
 });
 
-export const createGroupSchema = z.object({
+export const createGroupActionSchema = z.object({
     name: groupNameSchema,
     password: groupPasswordSchema,
     color: groupColorSchema,
 });
 
-export const createGroupRecordSchema = z.object({
+export const createGroupSchema = z.object({
     name: groupNameSchema,
     passwordSalt: z.string().min(1).max(255),
     passwordHash: z.string().min(1).max(255),
@@ -35,13 +35,13 @@ export const createGroupRecordSchema = z.object({
     color: groupColorSchema,
 });
 
-export const updateGroupSchema = z.object({
+export const updateGroupActionSchema = z.object({
     id: groupIdSchema,
     name: groupNameSchema.optional(),
     color: groupColorSchema.optional(),
 });
 
-export const updateGroupRecordSchema = z.object({
+export const updateGroupSchema = z.object({
     name: groupNameSchema.optional(),
     color: groupColorSchema.optional(),
 });
@@ -69,9 +69,9 @@ export const createGroupMemberSchema = z.object({
 export type Group = z.infer<typeof groupSchema>;
 export type GroupWithMembers = z.infer<typeof groupWithMembersSchema>;
 export type CreateGroupInput = z.infer<typeof createGroupSchema>;
-export type CreateGroupRecordInput = z.infer<typeof createGroupRecordSchema>;
+export type CreateGroupActionInput = z.infer<typeof createGroupActionSchema>;
 export type UpdateGroupInput = z.infer<typeof updateGroupSchema>;
-export type UpdateGroupRecordInput = z.infer<typeof updateGroupRecordSchema>;
+export type UpdateGroupActionInput = z.infer<typeof updateGroupActionSchema>;
 export type JoinGroupInput = z.infer<typeof joinGroupSchema>;
 export type LeaveGroupInput = z.infer<typeof leaveGroupSchema>;
 export type GroupMember = z.infer<typeof groupMemberSchema>;

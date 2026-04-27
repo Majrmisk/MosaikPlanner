@@ -17,14 +17,19 @@ import {
     removeGroupMember,
     updateGroup,
 } from './repository';
-import { createGroupSchema, joinGroupSchema, leaveGroupSchema, updateGroupSchema } from './schemas';
+import {
+    createGroupActionSchema,
+    joinGroupSchema,
+    leaveGroupSchema,
+    updateGroupActionSchema,
+} from './schemas';
 import type {
-    CreateGroupInput,
+    CreateGroupActionInput,
     Group,
     GroupMember,
     JoinGroupInput,
     LeaveGroupInput,
-    UpdateGroupInput,
+    UpdateGroupActionInput,
 } from './schemas';
 
 const scryptAsync = promisify(scrypt);
@@ -70,9 +75,9 @@ const verifyPassword = async (password: string, passwordSalt: string, passwordHa
     );
 };
 
-export const createGroupAction = async (input: CreateGroupInput): Promise<Group> => {
+export const createGroupAction = async (input: CreateGroupActionInput): Promise<Group> => {
     const currentUserId = await getCurrentUserId();
-    const data = createGroupSchema.parse(input);
+    const data = createGroupActionSchema.parse(input);
 
     const existingGroup = await getGroupByName(data.name);
 
@@ -103,9 +108,9 @@ export const createGroupAction = async (input: CreateGroupInput): Promise<Group>
     };
 };
 
-export const updateGroupAction = async (input: UpdateGroupInput): Promise<Group> => {
+export const updateGroupAction = async (input: UpdateGroupActionInput): Promise<Group> => {
     const currentUserId = await getCurrentUserId();
-    const data = updateGroupSchema.parse(input);
+    const data = updateGroupActionSchema.parse(input);
     const group = await getGroupById(data.id);
 
     if (!group) {
