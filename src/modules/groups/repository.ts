@@ -9,9 +9,9 @@ import type {
 import type { User } from '@/modules/users/schemas';
 import type {
     CreateGroupMemberInput,
-    CreateGroupRecordInput,
+    CreateGroupInput,
     Group,
-    UpdateGroupRecordInput,
+    UpdateGroupInput,
 } from './schemas';
 
 export const getGroupById = async (groupId: string): Promise<GroupRecord | undefined> => {
@@ -26,7 +26,7 @@ export const getGroupByName = async (groupName: string): Promise<GroupRecord | u
     });
 };
 
-export const createGroup = async (data: CreateGroupRecordInput): Promise<GroupRecord> => {
+export const createGroup = async (data: CreateGroupInput): Promise<GroupRecord> => {
     const [group] = await db.insert(groupsTable).values(data).returning();
 
     if (!group) {
@@ -38,7 +38,7 @@ export const createGroup = async (data: CreateGroupRecordInput): Promise<GroupRe
 
 export const updateGroup = async (
     groupId: string,
-    data: UpdateGroupRecordInput,
+    data: UpdateGroupInput,
 ): Promise<GroupRecord> => {
     const [group] = await db
         .update(groupsTable)
