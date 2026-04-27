@@ -25,7 +25,6 @@ export const createWidgetDataSchema = z.object({
 });
 
 export const updateWidgetDataSchema = z.object({
-    id: widgetDataIdSchema,
     data: widgetDataContentSchema,
 });
 
@@ -47,14 +46,12 @@ export const createWidgetSchema = z.object({
 });
 
 export const updateWidgetSchema = z.object({
-    id: widgetIdSchema,
     groupId: groupIdSchema.nullable().optional(),
     name: widgetNameSchema.optional(),
     type: widgetTypeSchema.optional(),
     visibility: widgetVisibilitySchema.optional(),
     dataId: widgetDataIdSchema.optional(),
 });
-
 
 export type Widget = z.infer<typeof widgetSchema>;
 export type CreateWidgetInput = z.infer<typeof createWidgetSchema>;
