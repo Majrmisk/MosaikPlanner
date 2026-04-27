@@ -35,9 +35,7 @@ export const createWidget = async (data: CreateWidgetInput): Promise<WidgetRecor
     return widget;
 };
 
-export const createWidgetData = async (
-    data: CreateWidgetDataInput,
-): Promise<WidgetDataRecord> => {
+export const createWidgetData = async (data: CreateWidgetDataInput): Promise<WidgetDataRecord> => {
     const [widgetData] = await db.insert(widgetDataTable).values(data).returning();
 
     if (!widgetData) {
@@ -82,10 +80,7 @@ export const updateWidgetData = async (
 };
 
 export const deleteWidget = async (widgetId: string): Promise<WidgetRecord | undefined> => {
-    const [widget] = await db
-        .delete(widgetsTable)
-        .where(eq(widgetsTable.id, widgetId))
-        .returning();
+    const [widget] = await db.delete(widgetsTable).where(eq(widgetsTable.id, widgetId)).returning();
 
     return widget;
 };

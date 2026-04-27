@@ -7,12 +7,7 @@ import type {
     GroupMember as GroupMemberRecord,
 } from '@/lib/db/schemas/groups';
 import type { User } from '@/modules/users/schemas';
-import type {
-    CreateGroupMemberInput,
-    CreateGroupInput,
-    Group,
-    UpdateGroupInput,
-} from './schemas';
+import type { CreateGroupMemberInput, CreateGroupInput, Group, UpdateGroupInput } from './schemas';
 
 export const getGroupById = async (groupId: string): Promise<GroupRecord | undefined> => {
     return db.query.groupsTable.findFirst({

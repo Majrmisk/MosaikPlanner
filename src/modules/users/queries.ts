@@ -1,11 +1,11 @@
-'server-only'
+'server-only';
 
-import { User } from "./schemas";
-import { getUserById as getUserRecordById } from "./repository";
+import { User } from './schemas';
+import { getUserById as getUserRecordById } from './repository';
 
 export const getUserById = async (userId: string): Promise<User | null> => {
     const user = await getUserRecordById(userId);
-    
+
     if (!user) {
         return null;
     }
@@ -16,4 +16,4 @@ export const getUserById = async (userId: string): Promise<User | null> => {
         email: user.email,
         image: user.image,
     };
-}
+};
