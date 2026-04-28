@@ -29,6 +29,13 @@
       "when": 1777227401162,
       "tag": "0003_add-dashboard-items",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1777404620659,
+      "tag": "0004_add-unique-group-name",
+      "breakpoints": true
     }
   ]
 }

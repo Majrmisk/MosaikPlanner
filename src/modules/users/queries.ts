@@ -1,4 +1,4 @@
-'server-only';
+import 'server-only';
 
 import { User } from './schemas';
 import { getUserById as getUserRecordById } from './repository';
