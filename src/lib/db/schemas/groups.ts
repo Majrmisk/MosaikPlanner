@@ -2,18 +2,22 @@ import { relations } from 'drizzle-orm';
 import { text, sqliteTable, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { users } from './users';
 
-export const groupsTable = sqliteTable('groups', {
-    id: text('id')
-        .primaryKey()
-        .$defaultFn(() => crypto.randomUUID()),
-    name: text('name').notNull(),
-    passwordSalt: text('password_salt').notNull(),
-    passwordHash: text('password_hash').notNull(),
-    createdByUserId: text('created_by_user_id')
-        .notNull()
-        .references(() => users.id, { onDelete: 'cascade' }),
-    color: text('color').notNull(),
-});
+export const groupsTable = sqliteTable(
+    'groups',
+    {
+        id: text('id')
+            .primaryKey()
+            .$defaultFn(() => crypto.randomUUID()),
+        name: text('name').notNull(),
+        passwordSalt: text('password_salt').notNull(),
+        passwordHash: text('password_hash').notNull(),
+        createdByUserId: text('created_by_user_id')
+            .notNull()
+            .references(() => users.id, { onDelete: 'cascade' }),
+        color: text('color').notNull(),
+    },
+    (table) => [uniqueIndex('groups_name_unique_idx').on(table.name)],
+);
 
 export const groupMembersTable = sqliteTable(
     'group_members',

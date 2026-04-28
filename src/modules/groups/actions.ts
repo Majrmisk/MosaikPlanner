@@ -35,6 +35,22 @@ import type {
 const scryptAsync = promisify(scrypt);
 const passwordKeyLength = 64;
 const passwordSaltBytes = 16;
+const groupAlreadyExistsMessage = 'Group already exists';
+
+const isUniqueGroupNameConstraintError = (error: unknown) => {
+    if (typeof error !== 'object' || error === null) {
+        return false;
+    }
+
+    const maybeError = error as { code?: unknown; message?: unknown };
+    const code = typeof maybeError.code === 'string' ? maybeError.code : '';
+    const message = typeof maybeError.message === 'string' ? maybeError.message : '';
+
+    return (
+        (code === 'SQLITE_CONSTRAINT' || code === 'SQLITE_CONSTRAINT_UNIQUE') &&
+        (message.includes('groups.name') || message.includes('groups_name_unique_idx'))
+    );
+};
 
 const getCurrentUserId = async () => {
     const session = await auth();
@@ -82,16 +98,26 @@ export const createGroupAction = async (input: CreateGroupActionInput): Promise<
     const existingGroup = await getGroupByName(data.name);
 
     if (existingGroup) {
-        throw new Error('Group already exists');
+        throw new Error(groupAlreadyExistsMessage);
     }
 
     const passwordRecord = await createPasswordRecord(data.password);
-    const group = await createGroup({
-        name: data.name,
-        color: data.color,
-        createdByUserId: currentUserId,
-        ...passwordRecord,
-    });
+    let group: Awaited<ReturnType<typeof createGroup>>;
+
+    try {
+        group = await createGroup({
+            name: data.name,
+            color: data.color,
+            createdByUserId: currentUserId,
+            ...passwordRecord,
+        });
+    } catch (error) {
+        if (isUniqueGroupNameConstraintError(error)) {
+            throw new Error(groupAlreadyExistsMessage);
+        }
+
+        throw error;
+    }
 
     await addGroupMember({
         groupId: group.id,
@@ -121,10 +147,20 @@ export const updateGroupAction = async (input: UpdateGroupActionInput): Promise<
         throw new Error('Forbidden');
     }
 
-    const updatedGroup = await updateGroup(data.id, {
-        name: data.name,
-        color: data.color,
-    });
+    let updatedGroup: Awaited<ReturnType<typeof updateGroup>>;
+
+    try {
+        updatedGroup = await updateGroup(data.id, {
+            name: data.name,
+            color: data.color,
+        });
+    } catch (error) {
+        if (isUniqueGroupNameConstraintError(error)) {
+            throw new Error(groupAlreadyExistsMessage);
+        }
+
+        throw error;
+    }
 
     revalidatePath('/dashboard');
 
