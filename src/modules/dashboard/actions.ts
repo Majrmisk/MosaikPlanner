@@ -1,48 +1,102 @@
 'use server';
 
-// TODO
-// import { revalidatePath } from 'next/cache';
-// import { auth } from '@/auth';
-// import {
-//     getDashboardItemByUserIdAndWidgetId,
-// } from './repository';
-// import { moveDashboardWidgetSchema } from './schemas';
-// import type { DashboardItem, MoveDashboardWidgetInput } from './schemas';
+import { revalidatePath } from 'next/cache';
+import { auth } from '@/auth';
+import { createWidgetFormSchema, widgetIdSchema } from '@/modules/widgets/schemas';
+import { dashboardItemIdSchema } from './schemas';
+import { createWidgetData, createWidget, getWidgetById, deleteWidget } from '@/modules/widgets/repository';
+import {
+    addWidgetToDashboard,
+    getMaxOrderIndex,
+    getDashboardItemById,
+    getDashboardItemByUserIdAndWidgetId,
+    removeDashboardItem,
+} from './repository';
 
-// const getCurrentUserId = async (): Promise<string> => {
-//     const session = await auth();
-//     const userId = session?.user?.id;
+const getCurrentUserId = async (): Promise<string> => {
+    const session = await auth();
+    const userId = session?.user?.id;
 
-//     if (!userId) {
-//         throw new Error('Unauthorized');
-//     }
+    if (!userId) {
+        throw new Error('Unauthorized');
+    }
 
-//     return userId;
-// };
+    return userId;
+};
 
-// export const moveDashboardWidgetAction = async (
-//     input: MoveDashboardWidgetInput,
-// ): Promise<DashboardItem> => {
-//     const currentUserId = await getCurrentUserId();
-//     const data = moveDashboardWidgetSchema.parse(input);
-//     const dashboardItem = await getDashboardItemByUserIdAndWidgetId(currentUserId, data.widgetId);
+export const createWidgetAction = async (input: {
+    name: string;
+    type: string;
+    visibility: string;
+    groupId: string | null;
+}) => {
+    const userId = await getCurrentUserId();
+    const { name, type, visibility, groupId } = createWidgetFormSchema.parse(input);
 
-//     if (!dashboardItem) {
-//         throw new Error('Dashboard widget not found');
-//     }
+    const initialData: Record<string, string> = {
+        notes: JSON.stringify({ content: '' }),
+        // TODO: calendar: JSON.stringify...
+        // TODO: checklist: JSON.stringify...
+        // TODO: spinner: JSON.stringify...
+        // TODO: expenses: JSON.stringify...
+    };
 
-//     const updatedDashboardItem = await updateDashboardWidgetOrder(
-//         currentUserId,
-//         data.widgetId,
-//         data.orderIndex,
-//     );
+    const widgetData = await createWidgetData({
+        data: initialData[type] ?? JSON.stringify({}),
+    });
 
-//     revalidatePath('/dashboard');
+    const widget = await createWidget({
+        name,
+        type,
+        visibility,
+        groupId,
+        dataId: widgetData.id,
+    });
 
-//     return {
-//         id: updatedDashboardItem.id,
-//         userId: updatedDashboardItem.userId,
-//         widgetId: updatedDashboardItem.widgetId,
-//         orderIndex: updatedDashboardItem.orderIndex,
-//     };
-// };
+    const maxOrder = await getMaxOrderIndex(userId);
+    await addWidgetToDashboard(userId, widget.id, maxOrder + 1);
+
+    revalidatePath('/dashboard');
+};
+
+export const addExistingWidgetAction = async (widgetId: string) => {
+    const userId = await getCurrentUserId();
+    const validatedId = widgetIdSchema.parse(widgetId);
+
+    const widget = await getWidgetById(validatedId);
+    if (!widget) {
+        throw new Error('Widget not found');
+    }
+
+    const existing = await getDashboardItemByUserIdAndWidgetId(userId, validatedId);
+    if (existing) {
+        throw new Error('Widget is already on your dashboard');
+    }
+
+    const lastIndex = await getMaxOrderIndex(userId);
+    await addWidgetToDashboard(userId, validatedId, lastIndex + 1);
+
+    revalidatePath('/dashboard');
+};
+
+export const removeWidgetFromDashboardAction = async (dashboardItemId: string) => {
+    const userId = await getCurrentUserId();
+    const validatedId = dashboardItemIdSchema.parse(dashboardItemId);
+
+    const dashboardItem = await getDashboardItemById(validatedId);
+    if (!dashboardItem || dashboardItem.userId !== userId) {
+        throw new Error('Dashboard item not found');
+    }
+
+    await removeDashboardItem(validatedId);
+    // Remove group widgets only from the user's dashboard,
+    // do not delete them, that should be handled elsewhere.
+    // - either right in the group page or when the last member removes it from their dashboard
+    // Private widgets get deleted here.
+    const widget = await getWidgetById(dashboardItem.widgetId);
+    if (widget?.visibility === 'private') {
+        await deleteWidget(widget.id);
+    }
+
+    revalidatePath('/dashboard');
+};
