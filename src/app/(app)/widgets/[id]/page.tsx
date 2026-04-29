@@ -35,10 +35,7 @@ export default async function WidgetPage({ params }: WidgetPageProps) {
     }
 
     if (widget.visibility === 'private') {
-        const dashboardItem = await getDashboardItemByUserIdAndWidgetId(
-            session.user.id,
-            widget.id,
-        );
+        const dashboardItem = await getDashboardItemByUserIdAndWidgetId(session.user.id, widget.id);
         if (!dashboardItem) {
             notFound();
         }
@@ -57,9 +54,7 @@ export default async function WidgetPage({ params }: WidgetPageProps) {
 
     return (
         <div className="flex flex-col items-center gap-6 py-24 text-center">
-            <p className="text-muted-foreground">
-                Widget not implemented.
-            </p>
+            <p className="text-muted-foreground">Widget not implemented.</p>
             <Link
                 href="/dashboard"
                 className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"

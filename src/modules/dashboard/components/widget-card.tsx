@@ -28,9 +28,7 @@ export type WidgetPreviewProps = {
 };
 
 function DefaultPreview() {
-    return (
-        <p className="line-clamp-3 text-xs text-muted-foreground">No preview</p>
-    );
+    return <p className="line-clamp-3 text-xs text-muted-foreground">No preview</p>;
 }
 
 const widgetPreviews: Record<string, ComponentType<WidgetPreviewProps>> = {
@@ -46,14 +44,9 @@ export function WidgetCard({ dashboardItem }: WidgetCardProps) {
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [removing, setRemoving] = useState(false);
 
-    const {
-        attributes,
-        listeners,
-        setNodeRef,
-        transform,
-        transition,
-        isDragging,
-    } = useSortable({ id: dashboardItem.id });
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+        id: dashboardItem.id,
+    });
 
     const style = {
         transform: CSS.Transform.toString(transform),

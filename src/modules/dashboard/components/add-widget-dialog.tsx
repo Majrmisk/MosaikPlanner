@@ -4,12 +4,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useFormStatus } from 'react-dom';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -110,7 +105,10 @@ export function AddWidgetDialog({
                                             className="flex items-center justify-between rounded-md p-2 text-left text-sm transition-colors hover:bg-muted"
                                         >
                                             <span className="truncate font-medium">{w.name}</span>
-                                            <Badge variant="secondary" className="ml-2 text-xs capitalize">
+                                            <Badge
+                                                variant="secondary"
+                                                className="ml-2 text-xs capitalize"
+                                            >
                                                 {w.type}
                                             </Badge>
                                         </button>
@@ -149,10 +147,7 @@ export function AddWidgetDialog({
                                     control={form.control}
                                     name="type"
                                     render={({ field }) => (
-                                        <Select
-                                            value={field.value}
-                                            onValueChange={field.onChange}
-                                        >
+                                        <Select value={field.value} onValueChange={field.onChange}>
                                             <SelectTrigger className="w-full">
                                                 <SelectValue />
                                             </SelectTrigger>
@@ -182,10 +177,7 @@ export function AddWidgetDialog({
                                     control={form.control}
                                     name="target"
                                     render={({ field }) => (
-                                        <Select
-                                            value={field.value}
-                                            onValueChange={field.onChange}
-                                        >
+                                        <Select value={field.value} onValueChange={field.onChange}>
                                             <SelectTrigger className="w-full">
                                                 <SelectValue />
                                             </SelectTrigger>
