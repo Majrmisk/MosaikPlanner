@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import type { ComponentType } from 'react';
 import { useRouter } from 'next/navigation';
-import { X } from 'lucide-react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { X, GripVertical } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { DashboardWidget } from '@/modules/dashboard/schemas';
 import { removeWidgetFromDashboardAction } from '@/modules/dashboard/actions';
@@ -20,8 +21,6 @@ import {
 
 type WidgetCardProps = {
     dashboardItem: DashboardWidget;
-    'data-widget-id'?: string;
-    'data-order-index'?: number;
 };
 
 export type WidgetPreviewProps = {
@@ -42,10 +41,24 @@ const widgetPreviews: Record<string, ComponentType<WidgetPreviewProps>> = {
     expenses: ExpensesPreview,
 };
 
-export function WidgetCard({ dashboardItem, ...dataAttrs }: WidgetCardProps) {
+export function WidgetCard({ dashboardItem }: WidgetCardProps) {
     const router = useRouter();
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [removing, setRemoving] = useState(false);
+
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id: dashboardItem.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
 
     const { widget } = dashboardItem;
     const PreviewComponent = widgetPreviews[widget.type] ?? DefaultPreview;
@@ -63,7 +76,6 @@ export function WidgetCard({ dashboardItem, ...dataAttrs }: WidgetCardProps) {
 
     const handleRemoveClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-        // viz comment in removeWidgetFromDashboardAction
         if (isPrivate) {
             setConfirmOpen(true);
         } else {
@@ -74,12 +86,21 @@ export function WidgetCard({ dashboardItem, ...dataAttrs }: WidgetCardProps) {
     return (
         <>
             <Card
-                className="group relative h-68 w-64 cursor-pointer gap-2 pt-0 transition-colors hover:bg-muted/50"
+                ref={setNodeRef}
+                style={style}
+                className={`group relative h-68 w-64 cursor-pointer gap-2 pt-0 transition-colors hover:bg-muted/50 ${isDragging ? 'z-50 opacity-50' : ''}`}
                 onClick={() => router.push(`/widgets/${dashboardItem.widgetId}`)}
-                {...dataAttrs}
+                {...attributes}
             >
-                <CardHeader className="flex flex-row items-center justify-between pt-3">
-                    <CardTitle className="truncate text-sm font-semibold">
+                <CardHeader className="flex flex-row items-center justify-between pl-2 pt-3">
+                    <div
+                        className="cursor-grab touch-none active:cursor-grabbing"
+                        {...listeners}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <GripVertical className="size-4 text-muted-foreground" />
+                    </div>
+                    <CardTitle className="flex-1 truncate text-sm font-semibold">
                         {widget.name}
                     </CardTitle>
                     <Button
