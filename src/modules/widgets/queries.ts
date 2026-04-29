@@ -5,9 +5,7 @@ import { groupMembersTable } from '@/lib/db/schemas/groups';
 import { eq, and, notInArray, inArray } from 'drizzle-orm';
 import type { Widget as WidgetRecord } from '@/lib/db/schemas/widgets';
 
-export const getAvailableGroupWidgetsForUser = async (
-    userId: string,
-): Promise<WidgetRecord[]> => {
+export const getAvailableGroupWidgetsForUser = async (userId: string): Promise<WidgetRecord[]> => {
     const userDashboardWidgetIds = db
         .select({ widgetId: dashboardItemsTable.widgetId })
         .from(dashboardItemsTable)
