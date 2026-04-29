@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { asc, eq, max, and } from 'drizzle-orm';
+import { asc, eq, max } from 'drizzle-orm';
 import { dashboardItemsTable, db, widgetDataTable, widgetsTable } from '@/lib/db';
 import type { DashboardItem as DashboardItemRecord } from '@/lib/db/schemas/dashboard-items';
 import type { DashboardWidget } from './schemas';
@@ -99,21 +99,13 @@ export const removeDashboardItem = async (
     return item;
 };
 
-// TODO
-// export const updateDashboardWidgetOrder = async (
-//     userId: string,
-//     widgetId: string,
-//     orderIndex: number,
-// ): Promise<DashboardItemRecord> => {
-//     const [dashboardItem] = await db
-//         .update(dashboardItemsTable)
-//         .set({ orderIndex })
-//         .where(and(eq(dashboardItemsTable.userId, userId), eq(dashboardItemsTable.widgetId, widgetId)))
-//         .returning();
-
-//     if (!dashboardItem) {
-//         throw new Error('Failed to move dashboard widget');
-//     }
-
-//     return dashboardItem;
-// };
+export const reorderDashboardItems = async (
+    items: { id: string; orderIndex: number }[],
+): Promise<void> => {
+    for (const item of items) {
+        await db
+            .update(dashboardItemsTable)
+            .set({ orderIndex: item.orderIndex })
+            .where(eq(dashboardItemsTable.id, item.id));
+    }
+};
