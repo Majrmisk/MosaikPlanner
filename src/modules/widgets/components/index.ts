@@ -1,1 +1,3 @@
-// TODO add all widget-related components here, probably to separate folders based on the widget type
+export { NotesEditor } from './notes-editor';
+export { widgetEditors } from './widget-editors';
+export type { WidgetEditorProps } from './widget-editor-props';
