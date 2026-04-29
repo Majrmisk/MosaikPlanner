@@ -27,9 +27,7 @@ export function UserMenu({ user }: UserMenuProps) {
                         <AvatarImage src={user.image ?? undefined} alt={user.name ?? 'User'} />
                         <AvatarFallback />
                     </Avatar>
-                    <span className="hidden text-sm font-medium sm:inline-block">
-                        {user.name}
-                    </span>
+                    <span className="hidden text-sm font-medium sm:inline-block">{user.name}</span>
                     <ChevronDown className="size-3.5 text-muted-foreground" />
                 </Button>
             </DropdownMenuTrigger>

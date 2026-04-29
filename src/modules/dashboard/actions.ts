@@ -5,7 +5,12 @@ import { auth } from '@/auth';
 import { createWidgetFormSchema, widgetIdSchema } from '@/modules/widgets/schemas';
 import { z } from 'zod';
 import { dashboardItemIdSchema, dashboardItemOrderIndexSchema } from './schemas';
-import { createWidgetData, createWidget, getWidgetById, deleteWidget } from '@/modules/widgets/repository';
+import {
+    createWidgetData,
+    createWidget,
+    getWidgetById,
+    deleteWidget,
+} from '@/modules/widgets/repository';
 import {
     addWidgetToDashboard,
     getMaxOrderIndex,
@@ -108,9 +113,7 @@ const reorderItemSchema = z.object({
     orderIndex: dashboardItemOrderIndexSchema,
 });
 
-export const reorderWidgetsAction = async (
-    items: { id: string; orderIndex: number }[],
-) => {
+export const reorderWidgetsAction = async (items: { id: string; orderIndex: number }[]) => {
     const userId = await getCurrentUserId();
     const validated = z.array(reorderItemSchema).min(1).parse(items);
 

@@ -26,7 +26,7 @@ export function NotesEditor({ widget, widgetData }: WidgetEditorProps) {
     try {
         const parsed = JSON.parse(widgetData.data) as { content: string };
         initialContent = parsed.content;
-    } catch { }
+    } catch {}
 
     const form = useForm<NoteFormValues>({
         resolver: zodResolver(noteFormSchema),

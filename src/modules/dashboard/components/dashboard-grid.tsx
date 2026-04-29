@@ -30,7 +30,13 @@ type DashboardGridProps = {
 export function DashboardGrid({ widgets, availableGroupWidgets, userGroups }: DashboardGridProps) {
     const [addDialogOpen, setAddDialogOpen] = useState(false);
     const [items, setItems] = useState(widgets);
+    const [prevWidgets, setPrevWidgets] = useState(widgets);
     const [activeId, setActiveId] = useState<string | null>(null);
+
+    if (prevWidgets !== widgets) {
+        setPrevWidgets(widgets);
+        setItems(widgets);
+    }
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -76,10 +82,7 @@ export function DashboardGrid({ widgets, availableGroupWidgets, userGroups }: Da
             onDragEnd={handleDragEnd}
         >
             <div className="flex flex-wrap justify-center gap-4">
-                <SortableContext
-                    items={items.map((i) => i.id)}
-                    strategy={rectSortingStrategy}
-                >
+                <SortableContext items={items.map((i) => i.id)} strategy={rectSortingStrategy}>
                     {items.map((item) => (
                         <WidgetCard key={item.id} dashboardItem={item} />
                     ))}
