@@ -11,9 +11,26 @@ export const widgetTypeSchema = z.enum(['notes', 'calendar', 'checklist', 'spinn
 export const widgetVisibilitySchema = z.enum(['private', 'group']);
 export const widgetDataContentSchema = z.string().min(1);
 
-///
-// TODO once widget components data needs are known, add schemas here
-///
+export const createWidgetFormSchema = z.object({
+    name: widgetNameSchema,
+    type: widgetTypeSchema,
+    visibility: widgetVisibilitySchema,
+    groupId: groupIdSchema.nullable(),
+});
+
+export const createNoteFormSchema = z.object({
+    name: widgetNameSchema,
+});
+
+export const updateNoteFormSchema = z.object({
+    widgetId: widgetIdSchema,
+    title: z.string().trim().min(1).max(200),
+    content: z.string(),
+});
+
+export type CreateWidgetFormInput = z.infer<typeof createWidgetFormSchema>;
+export type CreateNoteFormInput = z.infer<typeof createNoteFormSchema>;
+export type UpdateNoteFormInput = z.infer<typeof updateNoteFormSchema>;
 
 export const widgetDataSchema = z.object({
     id: widgetDataIdSchema,
