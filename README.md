@@ -44,7 +44,12 @@ Extra considered features:
     ```
     and fill `AUTH_SECRET=` in .env
 
-6. start the app
+6. run db migration
+    ```shell
+    pnpm run db:migrate
+    ```
+
+7. start the app
     ```shell
     pnpm dev
     ```
