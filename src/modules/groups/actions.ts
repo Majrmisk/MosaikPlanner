@@ -240,6 +240,11 @@ export const leaveGroupAction = async (
 
     const remaining = await getGroupMemberCount(data.groupId);
     if (remaining === 0) {
+        // delete group widgets first
+        for (const widgetId of removedWidgetIds) {
+            await deleteWidget(widgetId);
+        }
+
         await deleteGroup(data.groupId);
     } else {
         // Delete any widgets that now no one has on their dashboard

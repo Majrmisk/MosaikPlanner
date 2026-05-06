@@ -80,9 +80,20 @@ export const updateWidgetData = async (
 };
 
 export const deleteWidget = async (widgetId: string): Promise<WidgetRecord | undefined> => {
-    const [widget] = await db.delete(widgetsTable).where(eq(widgetsTable.id, widgetId)).returning();
+    return db.transaction(async (transaction) => {
+        const [widget] = await transaction
+            .delete(widgetsTable)
+            .where(eq(widgetsTable.id, widgetId))
+            .returning();
 
-    return widget;
+        if (!widget) {
+            return undefined;
+        }
+
+        await transaction.delete(widgetDataTable).where(eq(widgetDataTable.id, widget.dataId));
+
+        return widget;
+    });
 };
 
 export const deleteWidgetData = async (
