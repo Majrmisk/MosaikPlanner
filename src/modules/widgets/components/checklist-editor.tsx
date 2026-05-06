@@ -1,0 +1,194 @@
+'use client';
+
+import { useRef, useState } from 'react';
+import { useForm, useFieldArray } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import Link from 'next/link';
+import { ArrowLeft, CalendarDays, Check, Plus, Trash2, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { updateChecklistWidgetAction } from '@/modules/widgets/actions';
+import type { WidgetEditorProps } from './widget-editor-props';
+
+const checklistFormSchema = z.object({
+    title: z.string().trim().min(1, 'Title is required').max(200),
+    items: z.array(
+        z.object({
+            id: z.string(),
+            text: z.string().trim().min(1, 'Item text is required').max(500),
+            completed: z.boolean(),
+            dueDate: z.string().nullable(),
+        }),
+    ),
+});
+
+type ChecklistFormValues = z.infer<typeof checklistFormSchema>;
+
+export function ChecklistEditor({ widget, widgetData }: WidgetEditorProps) {
+    const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+
+    let initialItems: ChecklistFormValues['items'] = [];
+    try {
+        const parsed = JSON.parse(widgetData.data) as { items: ChecklistFormValues['items'] };
+        initialItems = parsed.items ?? [];
+    } catch {}
+
+    const form = useForm<ChecklistFormValues>({
+        resolver: zodResolver(checklistFormSchema),
+        defaultValues: {
+            title: widget.name,
+            items: initialItems,
+        },
+    });
+
+    const { fields, append, remove } = useFieldArray({
+        control: form.control,
+        name: 'items',
+    });
+
+    const dateInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+    const onSubmit = async (values: ChecklistFormValues) => {
+        setSaveStatus('saving');
+        try {
+            await updateChecklistWidgetAction({
+                widgetId: widget.id,
+                title: values.title,
+                items: values.items,
+            });
+            setSaveStatus('saved');
+            setTimeout(() => setSaveStatus('idle'), 2000);
+        } catch {
+            setSaveStatus('idle');
+        }
+    };
+
+    const addItem = () => {
+        append({ id: crypto.randomUUID(), text: '', completed: false, dueDate: null });
+    };
+
+    const formatDate = (date: string) =>
+        new Date(date).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' });
+
+    return (
+        <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+            <div className="flex items-center justify-between">
+                <Link
+                    href="/dashboard"
+                    className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                >
+                    <ArrowLeft className="size-4" />
+                    Dashboard
+                </Link>
+                <div className="flex items-center gap-2">
+                    {saveStatus === 'saved' && (
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Check className="size-3" />
+                            Saved
+                        </span>
+                    )}
+                    <Button
+                        onClick={form.handleSubmit(onSubmit)}
+                        disabled={saveStatus === 'saving'}
+                        size="sm"
+                    >
+                        {saveStatus === 'saving' ? 'Saving...' : 'Save'}
+                    </Button>
+                </div>
+            </div>
+
+            <div className="flex flex-col gap-4">
+                <Input
+                    placeholder="Checklist title"
+                    className="border-none px-0 text-2xl font-bold shadow-none focus-visible:ring-0"
+                    {...form.register('title')}
+                />
+                {form.formState.errors.title && (
+                    <p className="text-xs text-destructive">
+                        {form.formState.errors.title.message}
+                    </p>
+                )}
+
+                <div className="flex flex-col gap-2">
+                    {fields.map((field, index) => {
+                        const dueDate = form.watch(`items.${index}.dueDate`);
+                        return (
+                            <div key={field.id} className="flex items-center gap-3">
+                                <input
+                                    type="checkbox"
+                                    checked={form.watch(`items.${index}.completed`)}
+                                    onChange={(e) =>
+                                        form.setValue(`items.${index}.completed`, e.target.checked)
+                                    }
+                                    className="size-4 cursor-pointer"
+                                />
+                                <Input
+                                    placeholder="Item text"
+                                    className="flex-1 border-none px-0 shadow-none focus-visible:ring-0"
+                                    {...form.register(`items.${index}.text`)}
+                                />
+                                <div className="relative flex items-center">
+                                    {dueDate ? (
+                                        <span className="flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+                                            <CalendarDays className="size-3" />
+                                            {formatDate(dueDate)}
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    form.setValue(`items.${index}.dueDate`, null)
+                                                }
+                                                className="ml-1 hover:text-foreground"
+                                            >
+                                                <X className="size-3" />
+                                            </button>
+                                        </span>
+                                    ) : (
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => dateInputRefs.current[index]?.showPicker()}
+                                        >
+                                            <CalendarDays className="size-4 text-muted-foreground" />
+                                        </Button>
+                                    )}
+                                    <input
+                                        type="date"
+                                        ref={(el) => { dateInputRefs.current[index] = el; }}
+                                        className="absolute size-0 opacity-0"
+                                        onChange={(e) =>
+                                            form.setValue(
+                                                `items.${index}.dueDate`,
+                                                e.target.value || null,
+                                            )
+                                        }
+                                    />
+                                </div>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => remove(index)}
+                                >
+                                    <Trash2 className="size-4 text-muted-foreground" />
+                                </Button>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addItem}
+                    className="w-fit"
+                >
+                    <Plus className="size-4" />
+                    Add item
+                </Button>
+            </div>
+        </div>
+    );
+}
