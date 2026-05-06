@@ -28,9 +28,24 @@ export const updateNoteFormSchema = z.object({
     content: z.string(),
 });
 
+export const checklistItemSchema = z.object({
+    id: z.uuid(),
+    text: z.string().trim().min(1).max(500),
+    completed: z.boolean(),
+    dueDate: z.string().nullable(),
+});
+
+export const updateChecklistFormSchema = z.object({
+    widgetId: widgetIdSchema,
+    title: z.string().trim().min(1).max(200),
+    items: z.array(checklistItemSchema),
+});
+
 export type CreateWidgetFormInput = z.infer<typeof createWidgetFormSchema>;
 export type CreateNoteFormInput = z.infer<typeof createNoteFormSchema>;
 export type UpdateNoteFormInput = z.infer<typeof updateNoteFormSchema>;
+export type ChecklistItem = z.infer<typeof checklistItemSchema>;
+export type UpdateChecklistFormInput = z.infer<typeof updateChecklistFormSchema>;
 
 export const widgetDataSchema = z.object({
     id: widgetDataIdSchema,
