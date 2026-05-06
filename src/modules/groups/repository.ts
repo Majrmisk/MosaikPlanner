@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { and, eq } from 'drizzle-orm';
+import { and, count, eq } from 'drizzle-orm';
 import { db, groupMembersTable, groupsTable, users } from '@/lib/db';
 import type {
     Group as GroupRecord,
@@ -95,6 +95,19 @@ export const getUsersByGroupId = async (groupId: string): Promise<User[]> => {
         .from(groupMembersTable)
         .innerJoin(users, eq(groupMembersTable.userId, users.id))
         .where(eq(groupMembersTable.groupId, groupId));
+};
+
+export const deleteGroup = async (groupId: string): Promise<void> => {
+    await db.delete(groupsTable).where(eq(groupsTable.id, groupId));
+};
+
+export const getGroupMemberCount = async (groupId: string): Promise<number> => {
+    const [result] = await db
+        .select({ count: count() })
+        .from(groupMembersTable)
+        .where(eq(groupMembersTable.groupId, groupId));
+
+    return result?.count ?? 0;
 };
 
 export const getGroupsByUserId = async (userId: string): Promise<Group[]> => {

@@ -84,7 +84,15 @@ export function DashboardGrid({ widgets, availableGroupWidgets, userGroups }: Da
             <div className="flex flex-wrap justify-center gap-4">
                 <SortableContext items={items.map((i) => i.id)} strategy={rectSortingStrategy}>
                     {items.map((item) => (
-                        <WidgetCard key={item.id} dashboardItem={item} />
+                        <WidgetCard
+                            key={item.id}
+                            dashboardItem={item}
+                            group={
+                                item.widget.groupId
+                                    ? (userGroups.find((g) => g.id === item.widget.groupId) ?? null)
+                                    : null
+                            }
+                        />
                     ))}
                 </SortableContext>
                 <Card

@@ -5,9 +5,8 @@ import { ArrowLeft } from 'lucide-react';
 import { auth } from '@/auth';
 import { getWidgetById, getWidgetDataById } from '@/modules/widgets/repository';
 import { getDashboardItemByUserIdAndWidgetId } from '@/modules/dashboard/repository';
+import { getGroupById, getIsUserInGroup } from '@/modules/groups/queries';
 import { widgetEditors } from '@/modules/widgets/components/widget-editors';
-import { Badge } from '@/components/ui/badge';
-
 type WidgetPageProps = {
     params: Promise<{ id: string }>;
 };
@@ -41,7 +40,17 @@ export default async function WidgetPage({ params }: WidgetPageProps) {
         }
     }
 
-    const widgetData = await getWidgetDataById(widget.dataId);
+    if (widget.visibility === 'group' && widget.groupId) {
+        const isMember = await getIsUserInGroup(widget.groupId, session.user.id);
+        if (!isMember) {
+            notFound();
+        }
+    }
+
+    const [widgetData, group] = await Promise.all([
+        getWidgetDataById(widget.dataId),
+        widget.groupId ? getGroupById(widget.groupId) : Promise.resolve(null),
+    ]);
     if (!widgetData) {
         notFound();
     }
@@ -49,7 +58,7 @@ export default async function WidgetPage({ params }: WidgetPageProps) {
     const Editor = widgetEditors[widget.type];
 
     if (Editor) {
-        return <Editor widget={widget} widgetData={widgetData} />;
+        return <Editor widget={widget} widgetData={widgetData} group={group} />;
     }
 
     return (
