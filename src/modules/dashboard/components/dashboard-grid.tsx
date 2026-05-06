@@ -76,6 +76,7 @@ export function DashboardGrid({ widgets, availableGroupWidgets, userGroups }: Da
 
     return (
         <DndContext
+            id="dashboard-dnd"
             sensors={sensors}
             collisionDetection={closestCenter}
             onDragStart={handleDragStart}
