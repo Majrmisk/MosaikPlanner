@@ -9,6 +9,7 @@ import { X, GripVertical } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { DashboardWidget } from '@/modules/dashboard/schemas';
+import type { Group } from '@/modules/groups/schemas';
 import { removeWidgetFromDashboardAction } from '@/modules/dashboard/actions';
 import { RemoveWidgetConfirm } from './remove-widget-confirm';
 import {
@@ -21,6 +22,7 @@ import {
 
 type WidgetCardProps = {
     dashboardItem: DashboardWidget;
+    group: Group | null;
 };
 
 export type WidgetPreviewProps = {
@@ -39,7 +41,7 @@ const widgetPreviews: Record<string, ComponentType<WidgetPreviewProps>> = {
     expenses: ExpensesPreview,
 };
 
-export function WidgetCard({ dashboardItem }: WidgetCardProps) {
+export function WidgetCard({ dashboardItem, group }: WidgetCardProps) {
     const router = useRouter();
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [removing, setRemoving] = useState(false);
@@ -93,9 +95,17 @@ export function WidgetCard({ dashboardItem }: WidgetCardProps) {
                     >
                         <GripVertical className="size-4 text-muted-foreground" />
                     </div>
-                    <CardTitle className="flex-1 truncate text-sm font-semibold">
+                    <CardTitle className="min-w-0 flex-1 truncate text-sm font-semibold">
                         {widget.name}
                     </CardTitle>
+                    {group && (
+                        <span
+                            className="flex shrink-0 items-center rounded-full border px-1.5 py-0.5 text-[10px] font-medium"
+                            style={{ color: group.color, borderColor: group.color }}
+                        >
+                            {group.name}
+                        </span>
+                    )}
                     <Button
                         variant="ghost"
                         size="icon-xs"

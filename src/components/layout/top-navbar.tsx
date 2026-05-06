@@ -20,9 +20,12 @@ export function TopNavbar({ user }: TopNavbarProps) {
                     >
                         Dashboard
                     </Link>
-                    <span className="hidden cursor-not-allowed text-sm font-medium text-muted-foreground/50 sm:inline-block">
+                    <Link
+                        href="/groups"
+                        className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-block"
+                    >
                         Groups
-                    </span>
+                    </Link>
                 </nav>
                 <UserMenu user={user} />
             </div>
