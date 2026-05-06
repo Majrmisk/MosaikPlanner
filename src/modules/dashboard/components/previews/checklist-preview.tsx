@@ -22,7 +22,9 @@ export function ChecklistPreview({ data }: WidgetPreviewProps) {
             <div className="flex flex-col gap-1">
                 {items.slice(0, 5).map((item) => (
                     <div key={item.id} className="flex items-center gap-2">
-                        <div className={`size-3 shrink-0 rounded-sm border ${item.completed ? 'bg-primary border-primary' : 'border-muted-foreground'}`} />
+                        <div
+                            className={`size-3 shrink-0 rounded-sm border ${item.completed ? 'bg-primary border-primary' : 'border-muted-foreground'}`}
+                        />
                         <span
                             className={`truncate text-xs ${item.completed ? 'text-muted-foreground line-through' : ''}`}
                         >
