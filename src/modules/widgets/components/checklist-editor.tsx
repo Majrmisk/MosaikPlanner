@@ -148,14 +148,18 @@ export function ChecklistEditor({ widget, widgetData }: WidgetEditorProps) {
                                             type="button"
                                             variant="ghost"
                                             size="icon"
-                                            onClick={() => dateInputRefs.current[index]?.showPicker()}
+                                            onClick={() =>
+                                                dateInputRefs.current[index]?.showPicker()
+                                            }
                                         >
                                             <CalendarDays className="size-4 text-muted-foreground" />
                                         </Button>
                                     )}
                                     <input
                                         type="date"
-                                        ref={(el) => { dateInputRefs.current[index] = el; }}
+                                        ref={(el) => {
+                                            dateInputRefs.current[index] = el;
+                                        }}
                                         className="absolute size-0 opacity-0"
                                         onChange={(e) =>
                                             form.setValue(
