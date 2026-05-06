@@ -52,3 +52,14 @@ export const getGroupMembersByGroupId = async (groupId: string): Promise<User[]>
 export const getIsUserInGroup = async (groupId: string, userId: string): Promise<boolean> => {
     return isUserInGroup(groupId, userId);
 };
+
+export const getGroupsWithMembersByUserId = async (userId: string): Promise<GroupWithMembers[]> => {
+    const groups = await getGroupRecordsByUserId(userId);
+
+    return Promise.all(
+        groups.map(async (group) => {
+            const members = await getUsersByGroupId(group.id);
+            return { ...group, members };
+        }),
+    );
+};

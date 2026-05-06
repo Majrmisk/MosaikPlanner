@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { asc, eq, max } from 'drizzle-orm';
+import { and, asc, count, eq, inArray, max } from 'drizzle-orm';
 import { dashboardItemsTable, db, widgetDataTable, widgetsTable } from '@/lib/db';
 import type { DashboardItem as DashboardItemRecord } from '@/lib/db/schemas/dashboard-items';
 import type { DashboardWidget } from './schemas';
@@ -108,4 +108,38 @@ export const reorderDashboardItems = async (
             .set({ orderIndex: item.orderIndex })
             .where(eq(dashboardItemsTable.id, item.id));
     }
+};
+
+export const getDashboardItemCountByWidgetId = async (widgetId: string): Promise<number> => {
+    const [result] = await db
+        .select({ count: count() })
+        .from(dashboardItemsTable)
+        .where(eq(dashboardItemsTable.widgetId, widgetId));
+
+    return result?.count ?? 0;
+};
+
+// Remove all of a group's widgets from a user's dashboard once they leave that group
+export const removeGroupWidgetsFromUserDashboard = async (
+    userId: string,
+    groupId: string,
+): Promise<string[]> => {
+    const widgetIds = await db
+        .select({ id: widgetsTable.id })
+        .from(widgetsTable)
+        .where(eq(widgetsTable.groupId, groupId));
+
+    if (widgetIds.length === 0) return [];
+
+    await db.delete(dashboardItemsTable).where(
+        and(
+            eq(dashboardItemsTable.userId, userId),
+            inArray(
+                dashboardItemsTable.widgetId,
+                widgetIds.map((w) => w.id),
+            ),
+        ),
+    );
+
+    return widgetIds.map((w) => w.id);
 };

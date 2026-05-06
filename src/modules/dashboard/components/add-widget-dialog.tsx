@@ -8,7 +8,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -98,21 +97,31 @@ export function AddWidgetDialog({
                                 </p>
                             ) : (
                                 <div className="flex flex-col gap-2">
-                                    {availableGroupWidgets.map((w) => (
-                                        <button
-                                            key={w.id}
-                                            onClick={() => handleAddExisting(w.id)}
-                                            className="flex items-center justify-between rounded-md p-2 text-left text-sm transition-colors hover:bg-muted"
-                                        >
-                                            <span className="truncate font-medium">{w.name}</span>
-                                            <Badge
-                                                variant="secondary"
-                                                className="ml-2 text-xs capitalize"
+                                    {availableGroupWidgets.map((w) => {
+                                        const group = userGroups.find((g) => g.id === w.groupId);
+                                        return (
+                                            <button
+                                                key={w.id}
+                                                onClick={() => handleAddExisting(w.id)}
+                                                className="flex items-center justify-between rounded-md p-2 text-left text-sm transition-colors hover:bg-muted"
                                             >
-                                                {w.type}
-                                            </Badge>
-                                        </button>
-                                    ))}
+                                                <span className="truncate font-medium">
+                                                    {w.name}
+                                                </span>
+                                                {group && (
+                                                    <span
+                                                        className="ml-2 flex shrink-0 items-center rounded-full border px-1.5 py-0.5 text-[10px] font-medium"
+                                                        style={{
+                                                            color: group.color,
+                                                            borderColor: group.color,
+                                                        }}
+                                                    >
+                                                        {group.name}
+                                                    </span>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             )}
                         </ScrollArea>

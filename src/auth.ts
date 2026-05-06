@@ -5,7 +5,7 @@ import { db } from './lib/db';
 
 const getIsProtectedPath = (path: string) => {
     // TODO: Add more protected paths here as we add more pages
-    const protectedPaths = ['/dashboard', '/widgets'];
+    const protectedPaths = ['/dashboard', '/widgets', '/groups'];
 
     return protectedPaths.some((p) => path.startsWith(p));
 };

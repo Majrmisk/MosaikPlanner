@@ -9,10 +9,17 @@ import { promisify } from 'node:util';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
 import {
+    getDashboardItemCountByWidgetId,
+    removeGroupWidgetsFromUserDashboard,
+} from '@/modules/dashboard/repository';
+import { deleteWidget } from '@/modules/widgets/repository';
+import {
     addGroupMember,
     createGroup,
+    deleteGroup,
     getGroupById,
     getGroupByName,
+    getGroupMemberCount,
     isUserInGroup,
     removeGroupMember,
     updateGroup,
@@ -125,6 +132,7 @@ export const createGroupAction = async (input: CreateGroupActionInput): Promise<
     });
 
     revalidatePath('/dashboard');
+    revalidatePath('/groups');
 
     return {
         id: group.id,
@@ -143,7 +151,8 @@ export const updateGroupAction = async (input: UpdateGroupActionInput): Promise<
         throw new Error('Group not found');
     }
 
-    if (group.createdByUserId !== currentUserId) {
+    const isMember = await isUserInGroup(data.id, currentUserId);
+    if (!isMember) {
         throw new Error('Forbidden');
     }
 
@@ -163,6 +172,7 @@ export const updateGroupAction = async (input: UpdateGroupActionInput): Promise<
     }
 
     revalidatePath('/dashboard');
+    revalidatePath('/groups');
 
     return {
         id: updatedGroup.id,
@@ -194,12 +204,7 @@ export const joinGroupAction = async (input: JoinGroupInput): Promise<Group> => 
     const alreadyMember = await isUserInGroup(group.id, currentUserId);
 
     if (alreadyMember) {
-        return {
-            id: group.id,
-            name: group.name,
-            createdByUserId: group.createdByUserId,
-            color: group.color,
-        };
+        throw new Error('You are already a member of this group');
     }
 
     await addGroupMember({
@@ -208,6 +213,7 @@ export const joinGroupAction = async (input: JoinGroupInput): Promise<Group> => 
     });
 
     revalidatePath('/dashboard');
+    revalidatePath('/groups');
 
     return {
         id: group.id,
@@ -228,9 +234,25 @@ export const leaveGroupAction = async (
         throw new Error('Group not found');
     }
 
+    const removedWidgetIds = await removeGroupWidgetsFromUserDashboard(currentUserId, data.groupId);
+
     const membership = await removeGroupMember(data.groupId, currentUserId);
 
+    const remaining = await getGroupMemberCount(data.groupId);
+    if (remaining === 0) {
+        await deleteGroup(data.groupId);
+    } else {
+        // Delete any widgets that now no one has on their dashboard
+        for (const widgetId of removedWidgetIds) {
+            const count = await getDashboardItemCountByWidgetId(widgetId);
+            if (count === 0) {
+                await deleteWidget(widgetId);
+            }
+        }
+    }
+
     revalidatePath('/dashboard');
+    revalidatePath('/groups');
 
     return membership;
 };

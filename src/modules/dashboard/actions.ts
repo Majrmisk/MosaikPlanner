@@ -13,6 +13,7 @@ import {
 } from '@/modules/widgets/repository';
 import {
     addWidgetToDashboard,
+    getDashboardItemCountByWidgetId,
     getMaxOrderIndex,
     getDashboardItemById,
     getDashboardItemByUserIdAndWidgetId,
@@ -96,13 +97,19 @@ export const removeWidgetFromDashboardAction = async (dashboardItemId: string) =
     }
 
     await removeDashboardItem(validatedId);
-    // Remove group widgets only from the user's dashboard,
-    // do not delete them, that should be handled elsewhere.
-    // - either right in the group page or when the last member removes it from their dashboard
-    // Private widgets get deleted here.
+
     const widget = await getWidgetById(dashboardItem.widgetId);
-    if (widget?.visibility === 'private') {
+    if (!widget) return;
+
+    if (widget.visibility === 'private') {
         await deleteWidget(widget.id);
+    } else {
+        // If a group widget is still in use by other users,
+        // only remove it from the user's dashboard.
+        const remaining = await getDashboardItemCountByWidgetId(widget.id);
+        if (remaining === 0) {
+            await deleteWidget(widget.id);
+        }
     }
 
     revalidatePath('/dashboard');
