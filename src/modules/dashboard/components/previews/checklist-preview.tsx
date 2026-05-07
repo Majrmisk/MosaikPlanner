@@ -1,3 +1,4 @@
+import { CalendarDays } from 'lucide-react';
 import type { WidgetPreviewProps } from '../widget-card';
 import type { ChecklistItem } from '@/modules/widgets/schemas';
 
@@ -30,6 +31,15 @@ export function ChecklistPreview({ data }: WidgetPreviewProps) {
                         >
                             {item.text}
                         </span>
+                        {item.dueDate && (
+                            <span className="ml-auto shrink-0 flex items-center gap-1 text-xs text-muted-foreground">
+                                <CalendarDays className="size-3" />
+                                {new Date(item.dueDate).toLocaleDateString('cs-CZ', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                })}
+                            </span>
+                        )}
                     </div>
                 ))}
                 {items.length > 5 && (
