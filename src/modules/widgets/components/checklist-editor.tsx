@@ -1,13 +1,16 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
 import { ArrowLeft, CalendarDays, Check, Plus, Trash2, X } from 'lucide-react';
+import { format } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { updateChecklistWidgetAction } from '@/modules/widgets/actions';
 import type { WidgetEditorProps } from './widget-editor-props';
 
@@ -27,6 +30,7 @@ type ChecklistFormValues = z.infer<typeof checklistFormSchema>;
 
 export function ChecklistEditor({ widget, widgetData }: WidgetEditorProps) {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+    const [openPopover, setOpenPopover] = useState<number | null>(null);
 
     let initialItems: ChecklistFormValues['items'] = [];
     try {
@@ -46,8 +50,6 @@ export function ChecklistEditor({ widget, widgetData }: WidgetEditorProps) {
         control: form.control,
         name: 'items',
     });
-
-    const dateInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
     const onSubmit = async (values: ChecklistFormValues) => {
         setSaveStatus('saving');
@@ -69,7 +71,10 @@ export function ChecklistEditor({ widget, widgetData }: WidgetEditorProps) {
     };
 
     const formatDate = (date: string) =>
-        new Date(date).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' });
+        new Date(date + 'T12:00:00').toLocaleDateString('cs-CZ', {
+            day: 'numeric',
+            month: 'short',
+        });
 
     return (
         <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
@@ -128,47 +133,53 @@ export function ChecklistEditor({ widget, widgetData }: WidgetEditorProps) {
                                     className="flex-1 border-none px-0 shadow-none focus-visible:ring-0"
                                     {...form.register(`items.${index}.text`)}
                                 />
-                                <div className="relative flex items-center">
-                                    {dueDate ? (
-                                        <span className="flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
-                                            <CalendarDays className="size-3" />
-                                            {formatDate(dueDate)}
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    form.setValue(`items.${index}.dueDate`, null)
-                                                }
-                                                className="ml-1 hover:text-foreground"
-                                            >
-                                                <X className="size-3" />
-                                            </button>
-                                        </span>
-                                    ) : (
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() =>
-                                                dateInputRefs.current[index]?.showPicker()
+                                <Popover
+                                    open={openPopover === index}
+                                    onOpenChange={(open) => setOpenPopover(open ? index : null)}
+                                >
+                                    <PopoverTrigger asChild>
+                                        {dueDate ? (
+                                            <span className="flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+                                                <CalendarDays className="size-3" />
+                                                {formatDate(dueDate)}
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        form.setValue(
+                                                            `items.${index}.dueDate`,
+                                                            null,
+                                                        );
+                                                    }}
+                                                    className="ml-1 hover:text-foreground"
+                                                >
+                                                    <X className="size-3" />
+                                                </button>
+                                            </span>
+                                        ) : (
+                                            <Button type="button" variant="ghost" size="icon">
+                                                <CalendarDays className="size-4 text-muted-foreground" />
+                                            </Button>
+                                        )}
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="end">
+                                        <Calendar
+                                            mode="single"
+                                            selected={
+                                                dueDate
+                                                    ? new Date(dueDate + 'T12:00:00')
+                                                    : undefined
                                             }
-                                        >
-                                            <CalendarDays className="size-4 text-muted-foreground" />
-                                        </Button>
-                                    )}
-                                    <input
-                                        type="date"
-                                        ref={(el) => {
-                                            dateInputRefs.current[index] = el;
-                                        }}
-                                        className="absolute size-0 opacity-0"
-                                        onChange={(e) =>
-                                            form.setValue(
-                                                `items.${index}.dueDate`,
-                                                e.target.value || null,
-                                            )
-                                        }
-                                    />
-                                </div>
+                                            onSelect={(date) => {
+                                                form.setValue(
+                                                    `items.${index}.dueDate`,
+                                                    date ? format(date, 'yyyy-MM-dd') : null,
+                                                );
+                                                setOpenPopover(null);
+                                            }}
+                                        />
+                                    </PopoverContent>
+                                </Popover>
                                 <Button
                                     type="button"
                                     variant="ghost"
