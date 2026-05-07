@@ -18,10 +18,10 @@ const checklistFormSchema = z.object({
     title: z.string().trim().min(1, 'Title is required').max(200),
     items: z.array(
         z.object({
-            id: z.string(),
+            id: z.uuid(),
             text: z.string().trim().min(1, 'Item text is required').max(500),
             completed: z.boolean(),
-            dueDate: z.string().nullable(),
+            dueDate: z.iso.date().nullable(),
         }),
     ),
 });

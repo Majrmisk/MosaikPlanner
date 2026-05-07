@@ -32,7 +32,7 @@ export const checklistItemSchema = z.object({
     id: z.uuid(),
     text: z.string().trim().min(1).max(500),
     completed: z.boolean(),
-    dueDate: z.string().nullable(),
+    dueDate: z.iso.date().nullable(),
 });
 
 export const updateChecklistFormSchema = z.object({
