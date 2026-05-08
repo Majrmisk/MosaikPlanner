@@ -3,7 +3,7 @@
 import { z } from "zod";
 import {WidgetEditorProps} from "@/modules/widgets/components/widget-editor-props";
 import {useState} from "react";
-import {useForm} from "react-hook-form";
+import {useFieldArray, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import Link from "next/link";
 import {ArrowLeft, Check, Plus, Trash2} from "lucide-react";
@@ -13,8 +13,16 @@ import {useSession} from "next-auth/react";
 import { Label } from "@/components/ui/label";
 import {User, userSchema} from "@/modules/users/schemas";
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
+import {updateExpensesWidgetAction} from "@/modules/widgets/actions";
+import {
+    AlertDialog,
+    AlertDialogAction, AlertDialogCancel,
+    AlertDialogContent, AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
+} from "@/components/ui/alert-dialog";
 
-const CreateExpenseFormSchema = z.object({
+export const CreateExpenseFormSchema = z.object({
     id: z.string(),
     name: z.string().trim().min(1, "Expense title is required").max(200),
     price: z.number().positive("Price must be > 0"),
@@ -23,9 +31,9 @@ const CreateExpenseFormSchema = z.object({
     payedAt: z.date(),
 });
 
-type Expense = z.infer<typeof CreateExpenseFormSchema>;
+export type Expense = z.infer<typeof CreateExpenseFormSchema>;
 
-const ExpensesWidgetFormSchema = z.object({
+export const ExpensesWidgetFormSchema = z.object({
     title: z.string().trim().min(1, "Title is required").max(200),
     expenses: z.array(CreateExpenseFormSchema),
 });
@@ -157,29 +165,34 @@ export const ExpensesEditor = ({widget, widgetData, group}: WidgetEditorProps) =
     const form = useForm<ExpensesWidgetForm>({
         resolver: zodResolver(ExpensesWidgetFormSchema),
         defaultValues: {
-            title: widget.name
+            title: widget.name,
+            expenses: initExpenses,
         }
+    });
+
+    const { fields, append, remove } = useFieldArray({
+        control: form.control,
+        name: "expenses",
     });
 
     const onSubmit = async (values: ExpensesWidgetForm) => {
         setSaveStatus('saving');
-        /*
         try {
-            await updateExpenseWidgetAction({
+            await updateExpensesWidgetAction({
                 widgetId: widget.id,
                 title: values.title,
-                content: values.content,
+                expenses: values.expenses,
             });
             setSaveStatus('saved');
             setTimeout(() => setSaveStatus('idle'), 2000);
         } catch {
             setSaveStatus('idle');
         }
-         */
     };
 
-    const addExpense = async (expense: Expense) => {
-        initExpenses.push(expense);
+    const addExpense = (expense: Expense) => {
+        append(expense);
+        setCreateExpenseOpen(false);
     }
 
     return (
@@ -229,6 +242,55 @@ export const ExpensesEditor = ({widget, widgetData, group}: WidgetEditorProps) =
                     </p>
                 )}
             </div>
+
+
+            {fields.length > 0 && (
+                <div className="flex flex-col gap-2">
+                    {fields.map((field, index) => (
+                        <div key={field.id} className="flex items-center justify-between rounded-lg border p-3">
+                            <div className="flex flex-col gap-0.5">
+                                <span className="text-sm font-medium">{field.name}</span>
+                                <span className="text-xs text-muted-foreground">
+                        Paid by {groupUsers.find(u => u.id === field.payedBy)?.name ?? field.payedBy}
+                    </span>
+                                <span className="text-xs text-muted-foreground">
+                        For: {field.payedFor
+                                    .map(id => groupUsers.find(u => u.id === id)?.name ?? id)
+                                    .join(', ')}
+                    </span>
+                                <span className="text-xs text-muted-foreground">
+                        {new Date(field.payedAt).toLocaleDateString()}
+                    </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-semibold">${field.price.toFixed(2)}</span>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                                            <Trash2 className="size-4" />
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Remove expense?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This will remove <strong>{field.name}</strong> from the list. This action cannot be undone.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => remove(index)}>
+                                                Remove
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
 
             <Button type="button" variant="outline" className="w-full" onClick={() => setCreateExpenseOpen(true)}>
                 <Plus className="size-4" />
