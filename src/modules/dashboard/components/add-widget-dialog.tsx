@@ -159,9 +159,7 @@ export function AddWidgetDialog({
                                                 <SelectItem value="checklist" disabled>
                                                     Checklist (TODO)
                                                 </SelectItem>
-                                                <SelectItem value="spinner" disabled>
-                                                    Spinner (TODO)
-                                                </SelectItem>
+                                                <SelectItem value="spinner">Spinner</SelectItem>
                                                 <SelectItem value="expenses" disabled>
                                                     Expenses (TODO)
                                                 </SelectItem>
