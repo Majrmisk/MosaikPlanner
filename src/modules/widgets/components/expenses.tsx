@@ -3,10 +3,10 @@
 import { z } from "zod";
 import {WidgetEditorProps} from "@/modules/widgets/components/widget-editor-props";
 import {useState} from "react";
-import {useFieldArray, useForm} from "react-hook-form";
+import {Controller, useFieldArray, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import Link from "next/link";
-import {ArrowLeft, Check, Plus, Trash2} from "lucide-react";
+import {ArrowLeft, CalendarIcon, Check, Plus, Trash2} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {useSession} from "next-auth/react";
@@ -21,6 +21,9 @@ import {
     AlertDialogFooter,
     AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import {format} from "date-fns";
 
 export const CreateExpenseFormSchema = z.object({
     id: z.string(),
@@ -134,6 +137,34 @@ export const CreateExpenseDialog = ({open, onOpenChangeAction, onAddExpenseActio
                         )}
                     </div>
 
+                    <div className="flex flex-col gap-1">
+                        <Label>Date</Label>
+                        <Controller
+                            control={form.control}
+                            name="payedAt"
+                            render={({ field: f }) => (
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="w-full justify-start text-left font-normal"
+                                        >
+                                            <CalendarIcon className="mr-2 size-4" />
+                                            {f.value ? format(new Date(f.value), 'PPP') : 'Pick a date'}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={f.value ? new Date(f.value) : undefined}
+                                            onSelect={(date) => f.onChange(date ?? new Date())}
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                            )}
+                        />
+                    </div>
 
                     <Button type="button" onClick={form.handleSubmit(onCreateExpense)}>
                         Add
