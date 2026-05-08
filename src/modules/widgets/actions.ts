@@ -8,9 +8,11 @@ import {
     updateCalendarFormSchema,
     updateSpinnerFormSchema,
     advanceSpinnerSchema,
+    updateExpenseFormSchema
 } from './schemas';
 import { getWidgetById, getWidgetDataById, updateWidget, updateWidgetData } from './repository';
 import { getDashboardItemByUserIdAndWidgetId } from '@/modules/dashboard/repository';
+import {Expense} from "@/modules/widgets/components/expenses";
 
 const getCurrentUserId = async (): Promise<string> => {
     const session = await auth();
@@ -45,6 +47,36 @@ export const updateNoteWidgetAction = async (input: {
 
     await updateWidgetData(widget.dataId, {
         data: JSON.stringify({ content }),
+    });
+
+    await updateWidget(widgetId, { name: title });
+
+    revalidatePath('/dashboard');
+    revalidatePath(`/widgets/${widgetId}`);
+};
+
+export const updateExpensesWidgetAction = async (input: {
+    widgetId: string;
+    title: string;
+    expenses: Expense[];
+}) => {
+    const userId = await getCurrentUserId();
+    const { widgetId, title, expenses } = updateExpenseFormSchema.parse(input);
+
+    const widget = await getWidgetById(widgetId);
+    if (!widget) {
+        throw new Error('Widget not found');
+    }
+
+    if (widget.visibility === 'private') {
+        const dashboardItem = await getDashboardItemByUserIdAndWidgetId(userId, widgetId);
+        if (!dashboardItem) {
+            throw new Error('Widget not found');
+        }
+    }
+
+    await updateWidgetData(widget.dataId, {
+        data: JSON.stringify({ expenses }),
     });
 
     await updateWidget(widgetId, { name: title });
