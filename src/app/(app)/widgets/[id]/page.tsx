@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import { auth } from '@/auth';
 import { getWidgetById, getWidgetDataById } from '@/modules/widgets/repository';
 import { getDashboardItemByUserIdAndWidgetId } from '@/modules/dashboard/repository';
-import { getGroupById, getIsUserInGroup } from '@/modules/groups/queries';
+import { getGroupWithMembersById, getIsUserInGroup } from '@/modules/groups/queries';
 import { getCalendarChildWidgets } from '@/modules/widgets/queries';
 import { widgetEditors } from '@/modules/widgets/components/widget-editors';
 type WidgetPageProps = {
@@ -50,7 +50,7 @@ export default async function WidgetPage({ params }: WidgetPageProps) {
 
     const [widgetData, group] = await Promise.all([
         getWidgetDataById(widget.dataId),
-        widget.groupId ? getGroupById(widget.groupId) : Promise.resolve(null),
+        widget.groupId ? getGroupWithMembersById(widget.groupId) : Promise.resolve(null),
     ]);
     if (!widgetData) {
         notFound();
