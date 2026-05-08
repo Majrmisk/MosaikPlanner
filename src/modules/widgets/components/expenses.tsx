@@ -1,0 +1,247 @@
+'use client';
+
+import { z } from "zod";
+import {WidgetEditorProps} from "@/modules/widgets/components/widget-editor-props";
+import {useState} from "react";
+import {useForm} from "react-hook-form";
+import {zodResolver} from "@hookform/resolvers/zod";
+import Link from "next/link";
+import {ArrowLeft, Check, Plus, Trash2} from "lucide-react";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {useSession} from "next-auth/react";
+import { Label } from "@/components/ui/label";
+import {User, userSchema} from "@/modules/users/schemas";
+import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
+
+const CreateExpenseFormSchema = z.object({
+    id: z.string(),
+    name: z.string().trim().min(1, "Expense title is required").max(200),
+    price: z.number().positive("Price must be > 0"),
+    payedBy: z.uuidv4(),
+    payedFor: z.array(z.uuidv4()).min(0, "At least one person must be selected"),
+    payedAt: z.date(),
+});
+
+type Expense = z.infer<typeof CreateExpenseFormSchema>;
+
+const ExpensesWidgetFormSchema = z.object({
+    title: z.string().trim().min(1, "Title is required").max(200),
+    expenses: z.array(CreateExpenseFormSchema),
+});
+
+type ExpensesWidgetForm = z.infer<typeof ExpensesWidgetFormSchema>;
+
+type CreateExpenseDialogProps = {
+    open: boolean;
+    onOpenChangeAction: (open: boolean) => void;
+    onAddExpenseAction: (newExpense: Expense) => void;
+    loggedInUser: User;
+    groupUsers: User[];
+};
+
+export const CreateExpenseDialog = ({open, onOpenChangeAction, onAddExpenseAction, loggedInUser, groupUsers}: CreateExpenseDialogProps) => {
+    const form = useForm<Expense>({
+        resolver: zodResolver(CreateExpenseFormSchema),
+        defaultValues: {
+            id: crypto.randomUUID(),
+            name: "New expense",
+            price: 1,
+            payedBy: loggedInUser.id,
+            payedFor: groupUsers.map(u => u.id),
+            payedAt: new Date(),
+        },
+    });
+
+    const payedForValues = form.watch("payedFor") ?? [];
+
+    const togglePayedFor = (memberId: string) => {
+        const current = form.getValues(`payedFor`);
+        const updated = current.includes(memberId)
+            ? current.filter(id => id !== memberId)
+            : [...current, memberId];
+        form.setValue(`payedFor`, updated, { shouldValidate: true });
+    };
+
+    const onCreateExpense = (newExpense: Expense) => {
+        console.log(newExpense);
+        onAddExpenseAction(newExpense);
+    }
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChangeAction}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Add Expense</DialogTitle>
+                </DialogHeader>
+                <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-1">
+                        <Label>Name</Label>
+                        <Input placeholder="e.g. Groceries" {...form.register("name")} />
+                        {form.formState.errors.name && (
+                            <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
+                        )}
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                        <Label>Price</Label>
+                        <Input
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            placeholder="0.00"
+                            {...form.register("price", { valueAsNumber: true })}
+                        />
+                        {form.formState.errors.price && (
+                            <p className="text-xs text-destructive">{form.formState.errors.price.message}</p>
+                        )}
+                    </div>
+
+
+                    <div className="flex flex-col gap-2">
+                        <Label>Paid for</Label>
+                        <div className="flex flex-wrap gap-2">
+                            {groupUsers.map(member => {
+                                const selected = payedForValues.includes(member.id);
+                                return (
+                                    <button
+                                        key={member.id}
+                                        type="button"
+                                        onClick={() => togglePayedFor(member.id)}
+                                        className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                                            selected
+                                                ? 'border-primary bg-primary text-primary-foreground'
+                                                : 'border-border bg-transparent text-muted-foreground hover:border-primary/50 hover:text-foreground'
+                                        }`}
+                                    >
+                                        {member.name ?? member.email ?? member.id}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        {form.formState.errors.payedFor && (
+                            <p className="text-xs text-destructive">
+                                {form.formState.errors.payedFor.message ?? 'Select at least one person'}
+                            </p>
+                        )}
+                    </div>
+
+
+                    <Button type="button" onClick={form.handleSubmit(onCreateExpense)}>
+                        Add
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+export const ExpensesEditor = ({widget, widgetData, group}: WidgetEditorProps) => {
+    const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+    const [createExpenseOpen, setCreateExpenseOpen] = useState<boolean>(false);
+    const currentUser = useSession().data?.user;
+    const loggedInUser = currentUser ? userSchema.safeParse(currentUser).data : null;
+    if (!loggedInUser) {
+        return null;
+    }
+
+    const groupUsers = (widget.groupId && group) ? group.members : [loggedInUser];
+
+    let initExpenses: ExpensesWidgetForm["expenses"] = [];
+    try {
+        const parsed = JSON.parse(widgetData.data) as { expenses: ExpensesWidgetForm["expenses"] };
+        initExpenses = parsed.expenses;
+    } catch {
+    }
+
+    const form = useForm<ExpensesWidgetForm>({
+        resolver: zodResolver(ExpensesWidgetFormSchema),
+        defaultValues: {
+            title: widget.name
+        }
+    });
+
+    const onSubmit = async (values: ExpensesWidgetForm) => {
+        setSaveStatus('saving');
+        /*
+        try {
+            await updateExpenseWidgetAction({
+                widgetId: widget.id,
+                title: values.title,
+                content: values.content,
+            });
+            setSaveStatus('saved');
+            setTimeout(() => setSaveStatus('idle'), 2000);
+        } catch {
+            setSaveStatus('idle');
+        }
+         */
+    };
+
+    const addExpense = async (expense: Expense) => {
+        initExpenses.push(expense);
+    }
+
+    return (
+        <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+            <div className="flex items-center justify-between">
+                <Link
+                    href="/dashboard"
+                    className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                >
+                    <ArrowLeft className="size-4" />
+                    Dashboard
+                </Link>
+                <div className="flex items-center gap-2">
+                    {group && (
+                        <span
+                            className="flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium"
+                            style={{ color: group.color, borderColor: group.color }}
+                        >
+                            {group.name}
+                        </span>
+                    )}
+                    {saveStatus === 'saved' && (
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Check className="size-3" />
+                            Saved
+                        </span>
+                    )}
+                </div>
+                <Button
+                    onClick={form.handleSubmit(onSubmit)}
+                    disabled={saveStatus === 'saving'}
+                    size="sm"
+                >
+                    {saveStatus === 'saving' ? 'Saving...' : 'Save'}
+                </Button>
+            </div>
+
+            <div className="flex flex-col gap-1">
+                <Input
+                    placeholder="Expenses widget title"
+                    className="border-none px-0 text-2xl font-bold shadow-none focus-visible:ring-0"
+                    {...form.register('title')}
+                />
+                {form.formState.errors.title && (
+                    <p className="text-xs text-destructive">
+                        {form.formState.errors.title.message}
+                    </p>
+                )}
+            </div>
+
+            <Button type="button" variant="outline" className="w-full" onClick={() => setCreateExpenseOpen(true)}>
+                <Plus className="size-4" />
+                Add expense
+            </Button>
+
+            <CreateExpenseDialog
+                open={createExpenseOpen}
+                onOpenChangeAction={setCreateExpenseOpen}
+                onAddExpenseAction={addExpense}
+                loggedInUser={loggedInUser}
+                groupUsers={groupUsers}
+            />
+        </div>
+    );
+};
