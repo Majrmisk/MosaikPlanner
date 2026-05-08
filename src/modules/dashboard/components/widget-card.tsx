@@ -25,6 +25,7 @@ type WidgetCardProps = {
 
 export type WidgetPreviewProps = {
     data: string;
+    widgetId: string;
 };
 
 function DefaultPreview() {
@@ -107,7 +108,7 @@ export function WidgetCard({ dashboardItem }: WidgetCardProps) {
                     </Button>
                 </CardHeader>
                 <CardContent className="flex-1 overflow-hidden">
-                    <PreviewComponent data={widget.data.data} />
+                    <PreviewComponent data={widget.data.data} widgetId={dashboardItem.widgetId} />
                 </CardContent>
             </Card>
             {isPrivate && (
