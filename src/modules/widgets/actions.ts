@@ -12,7 +12,7 @@ import {
 } from './schemas';
 import { getWidgetById, getWidgetDataById, updateWidget, updateWidgetData } from './repository';
 import { getDashboardItemByUserIdAndWidgetId } from '@/modules/dashboard/repository';
-import {Expense} from "./components/expenses-editor";
+import { Expense } from './components/expenses-editor';
 
 const getCurrentUserId = async (): Promise<string> => {
     const session = await auth();
