@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { TopNavbar } from '@/components/layout/top-navbar';
-import {SessionProvider} from "next-auth/react";
+import { SessionProvider } from 'next-auth/react';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
     const session = await auth();

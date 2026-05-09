@@ -1,87 +1,90 @@
 'use client';
 
-import { z } from "zod";
-import {WidgetEditorProps} from "@/modules/widgets/components/widget-editor-props";
-import {useState} from "react";
-import {useFieldArray, useForm} from "react-hook-form";
-import {zodResolver} from "@hookform/resolvers/zod";
-import Link from "next/link";
-import {ArrowLeft, Check, Plus, Trash2} from "lucide-react";
-import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
-import {useSession} from "next-auth/react";
-import {userSchema} from "@/modules/users/schemas";
-import {updateExpensesWidgetAction} from "@/modules/widgets/actions";
+import { z } from 'zod';
+import { WidgetEditorProps } from '@/modules/widgets/components/widget-editor-props';
+import { useState } from 'react';
+import { useFieldArray, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import Link from 'next/link';
+import { ArrowLeft, Check, Plus, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useSession } from 'next-auth/react';
+import { userSchema } from '@/modules/users/schemas';
+import { updateExpensesWidgetAction } from '@/modules/widgets/actions';
 import {
     AlertDialog,
-    AlertDialogAction, AlertDialogCancel,
-    AlertDialogContent, AlertDialogDescription,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
     AlertDialogFooter,
-    AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
-} from "@/components/ui/alert-dialog";
-import {CreateExpenseDialog} from "@/modules/widgets/components/expenses-create-dialog";
-import {ExpensesChart} from "@/modules/widgets/components/expenses-chart";
-import {ExpensesDebts} from "@/modules/widgets/components/expenses-debts";
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { CreateExpenseDialog } from '@/modules/widgets/components/expenses-create-dialog';
+import { ExpensesChart } from '@/modules/widgets/components/expenses-chart';
+import { ExpensesDebts } from '@/modules/widgets/components/expenses-debts';
 
 export const CreateExpenseFormSchema = z.object({
     id: z.string(),
-    name: z.string().trim().min(1, "Expense title is required").max(200),
-    price: z.number().positive("Price must be > 0"),
+    name: z.string().trim().min(1, 'Expense title is required').max(200),
+    price: z.number().positive('Price must be > 0'),
     payedBy: z.uuidv4(),
-    payedFor: z.array(z.uuidv4()).min(1, "At least one person must be selected"),
+    payedFor: z.array(z.uuidv4()).min(1, 'At least one person must be selected'),
     payedAt: z.date(),
 });
 
 export type Expense = z.infer<typeof CreateExpenseFormSchema>;
 
 export const ExpensesWidgetFormSchema = z.object({
-    title: z.string().trim().min(1, "Title is required").max(200),
+    title: z.string().trim().min(1, 'Title is required').max(200),
     expenses: z.array(CreateExpenseFormSchema),
 });
 
 export type ExpensesWidgetForm = z.infer<typeof ExpensesWidgetFormSchema>;
 
-export const ExpensesEditor = ({widget, widgetData, group}: WidgetEditorProps) => {
+export const ExpensesEditor = ({ widget, widgetData, group }: WidgetEditorProps) => {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
     const [createExpenseOpen, setCreateExpenseOpen] = useState<boolean>(false);
     const [payDebtTo, setPayDebtTo] = useState<string[] | undefined>(undefined);
     const [payDebtAmout, setPayDebtAmout] = useState<number | undefined>(undefined);
     const currentUser = useSession().data?.user;
 
-    let initExpenses: ExpensesWidgetForm["expenses"] = [];
+    let initExpenses: ExpensesWidgetForm['expenses'] = [];
     try {
-        const parsed = JSON.parse(widgetData.data) as { expenses: ExpensesWidgetForm["expenses"] };
-        initExpenses = parsed.expenses.map(e => ({
+        const parsed = JSON.parse(widgetData.data) as { expenses: ExpensesWidgetForm['expenses'] };
+        initExpenses = parsed.expenses.map((e) => ({
             ...e,
-            payedAt: new Date(e.payedAt),  // they are loaded as strings, fail zod validation otherwise
+            payedAt: new Date(e.payedAt), // they are loaded as strings, fail zod validation otherwise
         }));
-    } catch {
-    }
+    } catch {}
 
     const form = useForm<ExpensesWidgetForm>({
         resolver: zodResolver(ExpensesWidgetFormSchema),
         defaultValues: {
             title: widget.name,
             expenses: initExpenses,
-        }
+        },
     });
 
     const { fields, append, remove } = useFieldArray({
         control: form.control,
-        name: "expenses",
+        name: 'expenses',
     });
 
     const loggedInUser = currentUser ? userSchema.safeParse(currentUser).data : null;
     if (!loggedInUser) {
         return null;
     }
-    const groupUsers = (widget.groupId && group) ? group.members : [loggedInUser];
+    const groupUsers = widget.groupId && group ? group.members : [loggedInUser];
 
     const settleDebt = (toId: string, amount: number) => {
-        setPayDebtTo([toId])
-        setPayDebtAmout(amount)
-        setCreateExpenseOpen(true)
-    }
+        setPayDebtTo([toId]);
+        setPayDebtAmout(amount);
+        setCreateExpenseOpen(true);
+    };
 
     const onSubmit = async (values: ExpensesWidgetForm) => {
         setSaveStatus('saving');
@@ -101,7 +104,7 @@ export const ExpensesEditor = ({widget, widgetData, group}: WidgetEditorProps) =
     const addExpense = (expense: Expense) => {
         append(expense);
         setCreateExpenseOpen(false);
-    }
+    };
 
     return (
         <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
@@ -153,32 +156,53 @@ export const ExpensesEditor = ({widget, widgetData, group}: WidgetEditorProps) =
 
             <ExpensesChart expenses={fields} groupUsers={groupUsers} />
 
-            <ExpensesDebts expenses={fields} groupUsers={groupUsers} loggedInUser={loggedInUser} onSettleDebt={settleDebt} />
+            <ExpensesDebts
+                expenses={fields}
+                groupUsers={groupUsers}
+                loggedInUser={loggedInUser}
+                onSettleDebt={settleDebt}
+            />
 
             {fields.length > 0 && (
                 <div className="flex flex-col gap-2">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Expenses</p>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        Expenses
+                    </p>
                     {fields.map((field, index) => (
-                        <div key={field.id} className="flex items-center justify-between rounded-lg border p-3">
+                        <div
+                            key={field.id}
+                            className="flex items-center justify-between rounded-lg border p-3"
+                        >
                             <div className="flex flex-col gap-0.5">
                                 <span className="text-sm font-medium">{field.name}</span>
                                 <span className="text-xs text-muted-foreground">
-                        Paid by {groupUsers.find(u => u.id === field.payedBy)?.name ?? field.payedBy}
-                    </span>
+                                    Paid by{' '}
+                                    {groupUsers.find((u) => u.id === field.payedBy)?.name ??
+                                        field.payedBy}
+                                </span>
                                 <span className="text-xs text-muted-foreground">
-                        For: {field.payedFor
-                                    .map(id => groupUsers.find(u => u.id === id)?.name ?? id)
-                                    .join(', ')}
-                    </span>
+                                    For:{' '}
+                                    {field.payedFor
+                                        .map(
+                                            (id) => groupUsers.find((u) => u.id === id)?.name ?? id,
+                                        )
+                                        .join(', ')}
+                                </span>
                                 <span className="text-xs text-muted-foreground">
-                        {new Date(field.payedAt).toLocaleDateString()}
-                    </span>
+                                    {new Date(field.payedAt).toLocaleDateString()}
+                                </span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className="text-sm font-semibold">${field.price.toFixed(2)}</span>
+                                <span className="text-sm font-semibold">
+                                    ${field.price.toFixed(2)}
+                                </span>
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
-                                        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-destructive hover:text-destructive"
+                                        >
                                             <Trash2 className="size-4" />
                                         </Button>
                                     </AlertDialogTrigger>
@@ -186,7 +210,8 @@ export const ExpensesEditor = ({widget, widgetData, group}: WidgetEditorProps) =
                                         <AlertDialogHeader>
                                             <AlertDialogTitle>Remove expense?</AlertDialogTitle>
                                             <AlertDialogDescription>
-                                                This will remove <strong>{field.name}</strong> from the list. This action cannot be undone.
+                                                This will remove <strong>{field.name}</strong> from
+                                                the list. This action cannot be undone.
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
@@ -203,13 +228,17 @@ export const ExpensesEditor = ({widget, widgetData, group}: WidgetEditorProps) =
                 </div>
             )}
 
-
-            <Button type="button" variant="outline" className="w-full" onClick={() => setCreateExpenseOpen(true)}>
+            <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => setCreateExpenseOpen(true)}
+            >
                 <Plus className="size-4" />
                 Add expense
             </Button>
 
-            {createExpenseOpen && (  // done like this to remount to pass defaultPayedToIds and defaultPrice
+            {createExpenseOpen && ( // done like this to remount to pass defaultPayedToIds and defaultPrice
                 <CreateExpenseDialog
                     open={createExpenseOpen}
                     onOpenChangeAction={setCreateExpenseOpen}
