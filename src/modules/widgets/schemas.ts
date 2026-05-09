@@ -60,15 +60,17 @@ export type CalendarManualEvent = z.infer<typeof calendarManualEventSchema>;
 export const updateExpenseFormSchema = z.object({
     widgetId: widgetIdSchema,
     title: z.string().trim().min(1).max(200),
-    expenses: z.array(z.object({
-        id: z.uuidv4(),
-        name: z.string().trim().min(1, "Expense title is required").max(200),
-        price: z.number().positive("Price must be > 0"),
-        payedBy: z.uuidv4(),
-        payedFor: z.array(z.uuidv4()).min(0, "At least one person must be selected"),
-        payedAt: z.date("v update expected"),
-    }))
-})
+    expenses: z.array(
+        z.object({
+            id: z.uuidv4(),
+            name: z.string().trim().min(1, 'Expense title is required').max(200),
+            price: z.number().positive('Price must be > 0'),
+            payedBy: z.uuidv4(),
+            payedFor: z.array(z.uuidv4()).min(0, 'At least one person must be selected'),
+            payedAt: z.date('v update expected'),
+        }),
+    ),
+});
 
 export type CreateWidgetFormInput = z.infer<typeof createWidgetFormSchema>;
 export type CreateNoteFormInput = z.infer<typeof createNoteFormSchema>;
