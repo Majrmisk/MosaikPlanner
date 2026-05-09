@@ -66,7 +66,7 @@ export const updateExpenseFormSchema = z.object({
         price: z.number().positive("Price must be > 0"),
         payedBy: z.uuidv4(),
         payedFor: z.array(z.uuidv4()).min(0, "At least one person must be selected"),
-        payedAt: z.date(),
+        payedAt: z.date("v update expected"),
     }))
 })
 
