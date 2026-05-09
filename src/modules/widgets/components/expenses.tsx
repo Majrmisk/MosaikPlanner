@@ -58,17 +58,19 @@ type CreateExpenseDialogProps = {
     onAddExpenseAction: (newExpense: Expense) => void;
     loggedInUser: User;
     groupUsers: User[];
+    defaultPrice?: number;
+    defaultPayedToIds?: string[];
 };
 
-export const CreateExpenseDialog = ({open, onOpenChangeAction, onAddExpenseAction, loggedInUser, groupUsers}: CreateExpenseDialogProps) => {
+export const CreateExpenseDialog = ({open, onOpenChangeAction, onAddExpenseAction, loggedInUser, groupUsers, defaultPrice, defaultPayedToIds}: CreateExpenseDialogProps) => {
     const form = useForm<Expense>({
         resolver: zodResolver(CreateExpenseFormSchema),
         defaultValues: {
             id: crypto.randomUUID(),
             name: "New expense",
-            price: 1,
+            price: defaultPrice ?? 1,
             payedBy: loggedInUser.id,
-            payedFor: groupUsers.map(u => u.id),
+            payedFor: defaultPayedToIds ?? groupUsers.map(u => u.id),
             payedAt: new Date(),
         },
     });
@@ -190,6 +192,8 @@ const PAYER_COLORS = [
 export const ExpensesEditor = ({widget, widgetData, group}: WidgetEditorProps) => {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
     const [createExpenseOpen, setCreateExpenseOpen] = useState<boolean>(false);
+    const [payDebtTo, setPayDebtTo] = useState<string[] | undefined>(undefined);
+    const [payDebtAmout, setPayDebtAmout] = useState<number | undefined>(undefined);
     const currentUser = useSession().data?.user;
 
     let initExpenses: ExpensesWidgetForm["expenses"] = [];
@@ -224,6 +228,14 @@ export const ExpensesEditor = ({widget, widgetData, group}: WidgetEditorProps) =
 
     const debts = calcDebts(fields);
 
+    const settleDebt = (toId: string, amount: number) => {
+        console.log("paying debt to:", toId, amount);
+        setPayDebtTo([toId])
+        setPayDebtAmout(amount)
+        console.log("setters:", payDebtTo, payDebtAmout);
+        setCreateExpenseOpen(true)
+    }
+
     const chartData = calcSpent(fields);
 
     const allPayerIds = [...new Set(
@@ -245,7 +257,6 @@ export const ExpensesEditor = ({widget, widgetData, group}: WidgetEditorProps) =
     }));
 
     const onSubmit = async (values: ExpensesWidgetForm) => {
-        console.log(values);
         setSaveStatus('saving');
         try {
             await updateExpensesWidgetAction({
@@ -314,23 +325,26 @@ export const ExpensesEditor = ({widget, widgetData, group}: WidgetEditorProps) =
             </div>
 
             {chartData.length > 0 && (
-                <ChartContainer config={dynamicChartConfig} className="min-h-[250] max-h-50 w-full">
-                    <BarChart accessibilityLayer data={barData}>
-                        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                        <ChartLegend content={<ChartLegendContent />} />
-                        <XAxis dataKey="month" />
-                        {allPayerIds.map(id => (
-                            <Bar
-                                key={id}
-                                dataKey={id}
-                                stackId="a"
-                                fill={`var(--color-${id})`}
-                                radius={4}
-                                name={groupUsers.find(u => u.id === id)?.name ?? id}
-                            />
-                        ))}
-                    </BarChart>
-                </ChartContainer>
+                <>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Payed</p>
+                    <ChartContainer config={dynamicChartConfig} className="min-h-[250] max-h-50 w-full">
+                        <BarChart accessibilityLayer data={barData}>
+                            <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                            <ChartLegend content={<ChartLegendContent />} />
+                            <XAxis dataKey="month" />
+                            {allPayerIds.map(id => (
+                                <Bar
+                                    key={id}
+                                    dataKey={id}
+                                    stackId="a"
+                                    fill={`var(--color-${id})`}
+                                    radius={4}
+                                    name={groupUsers.find(u => u.id === id)?.name ?? id}
+                                />
+                            ))}
+                        </BarChart>
+                    </ChartContainer>
+                </>
             )}
 
             {debts.size > 0 && (
@@ -342,9 +356,16 @@ export const ExpensesEditor = ({widget, widgetData, group}: WidgetEditorProps) =
                     {groupUsers.find(u => u.id === debtorId)?.name ?? debtorId}
                 </span>
                             {Array.from(owes.entries()).map(([creditorId, amount]) => (
-                                <span key={creditorId} className="pl-3 text-xs text-muted-foreground">
-                        → {groupUsers.find(u => u.id === creditorId)?.name ?? creditorId}: ${amount.toFixed(2)}
-                    </span>
+                                <div key={creditorId} className="flex items-center justify-between pl-3">
+        <span className="text-xs text-muted-foreground">
+            → {groupUsers.find(u => u.id === creditorId)?.name ?? creditorId}: ${amount.toFixed(2)}
+        </span>
+                                    {loggedInUser.id === debtorId && (
+                                        <Button type="button" variant="outline" size="sm" onClick={() => settleDebt(creditorId, amount)}>
+                                            Pay debt
+                                        </Button>
+                                    )}
+                                </div>
                             ))}
                         </div>
                     ))}
@@ -353,6 +374,7 @@ export const ExpensesEditor = ({widget, widgetData, group}: WidgetEditorProps) =
 
             {fields.length > 0 && (
                 <div className="flex flex-col gap-2">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Expenses</p>
                     {fields.map((field, index) => (
                         <div key={field.id} className="flex items-center justify-between rounded-lg border p-3">
                             <div className="flex flex-col gap-0.5">
@@ -404,13 +426,17 @@ export const ExpensesEditor = ({widget, widgetData, group}: WidgetEditorProps) =
                 Add expense
             </Button>
 
-            <CreateExpenseDialog
-                open={createExpenseOpen}
-                onOpenChangeAction={setCreateExpenseOpen}
-                onAddExpenseAction={addExpense}
-                loggedInUser={loggedInUser}
-                groupUsers={groupUsers}
-            />
+            {createExpenseOpen && (  // done like this to remount to pass defaultPayedToIds and defaultPrice
+                <CreateExpenseDialog
+                    open={createExpenseOpen}
+                    onOpenChangeAction={setCreateExpenseOpen}
+                    onAddExpenseAction={addExpense}
+                    loggedInUser={loggedInUser}
+                    groupUsers={groupUsers}
+                    defaultPayedToIds={payDebtTo}
+                    defaultPrice={payDebtAmout}
+                />
+            )}
         </div>
     );
 };
