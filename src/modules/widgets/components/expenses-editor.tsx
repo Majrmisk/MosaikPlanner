@@ -39,7 +39,7 @@ export const ExpensesWidgetFormSchema = z.object({
     expenses: z.array(CreateExpenseFormSchema),
 });
 
-type ExpensesWidgetForm = z.infer<typeof ExpensesWidgetFormSchema>;
+export type ExpensesWidgetForm = z.infer<typeof ExpensesWidgetFormSchema>;
 
 export const ExpensesEditor = ({widget, widgetData, group}: WidgetEditorProps) => {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
