@@ -30,7 +30,7 @@ export const CreateExpenseFormSchema = z.object({
     name: z.string().trim().min(1, "Expense title is required").max(200),
     price: z.number().positive("Price must be > 0"),
     payedBy: z.uuidv4(),
-    payedFor: z.array(z.uuidv4()).min(0, "At least one person must be selected"),
+    payedFor: z.array(z.uuidv4()).min(1, "At least one person must be selected"),
     payedAt: z.date(),
 });
 
@@ -108,7 +108,6 @@ export const CreateExpenseDialog = ({open, onOpenChangeAction, onAddExpenseActio
                         )}
                     </div>
 
-
                     <div className="flex flex-col gap-2">
                         <Label>Paid for</Label>
                         <div className="flex flex-wrap gap-2">
@@ -157,7 +156,7 @@ export const CreateExpenseDialog = ({open, onOpenChangeAction, onAddExpenseActio
                                     <PopoverContent className="w-auto p-0" align="start">
                                         <Calendar
                                             mode="single"
-                                            selected={f.value ? new Date(f.value) : undefined}
+                                            selected={f.value ? new Date(f.value) : new Date()}
                                             onSelect={(date) => f.onChange(date ?? new Date())}
                                         />
                                     </PopoverContent>
@@ -179,17 +178,14 @@ export const ExpensesEditor = ({widget, widgetData, group}: WidgetEditorProps) =
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
     const [createExpenseOpen, setCreateExpenseOpen] = useState<boolean>(false);
     const currentUser = useSession().data?.user;
-    const loggedInUser = currentUser ? userSchema.safeParse(currentUser).data : null;
-    if (!loggedInUser) {
-        return null;
-    }
-
-    const groupUsers = (widget.groupId && group) ? group.members : [loggedInUser];
 
     let initExpenses: ExpensesWidgetForm["expenses"] = [];
     try {
         const parsed = JSON.parse(widgetData.data) as { expenses: ExpensesWidgetForm["expenses"] };
-        initExpenses = parsed.expenses;
+        initExpenses = parsed.expenses.map(e => ({
+            ...e,
+            payedAt: new Date(e.payedAt),  // they are loaded as strings, fail zod validation otherwise
+        }));
     } catch {
     }
 
@@ -201,16 +197,24 @@ export const ExpensesEditor = ({widget, widgetData, group}: WidgetEditorProps) =
         }
     });
 
-
-
     const { fields, append, remove } = useFieldArray({
         control: form.control,
         name: "expenses",
     });
 
+    const loggedInUser = currentUser ? userSchema.safeParse(currentUser).data : null;
+    if (!loggedInUser) {
+        return null;
+    }
+
+    const groupUsers = (widget.groupId && group) ? group.members : [loggedInUser];
+
     const debts = calcDebts(fields);
 
+    const graphData = calcSpent(fields);
+
     const onSubmit = async (values: ExpensesWidgetForm) => {
+        console.log(values);
         setSaveStatus('saving');
         try {
             await updateExpensesWidgetAction({
@@ -257,7 +261,7 @@ export const ExpensesEditor = ({widget, widgetData, group}: WidgetEditorProps) =
                     )}
                 </div>
                 <Button
-                    onClick={form.handleSubmit(onSubmit)}
+                    onClick={form.handleSubmit(onSubmit, (errors) => console.log("Save errors:", errors))}
                     disabled={saveStatus === 'saving'}
                     size="sm"
                 >
@@ -381,4 +385,21 @@ const calcDebts = (expenses: Expense[]): Map<string, Map<string, number>> => {
     });
 
     return DebtsMap;
+}
+
+const calcSpent = (expenses: Expense[]) => {
+    const filterDate = new Date();
+    filterDate.setMonth(filterDate.getMonth() - 6);
+
+    const filteredExpenses = expenses
+        .filter(e => new Date(e.payedAt) > filterDate);
+
+    const expensesByMonth = Object.groupBy(
+        filteredExpenses, ({ payedAt }) =>
+            new Date(payedAt).getMonth()
+    );
+
+
+
+    return expensesByMonth;
 }
