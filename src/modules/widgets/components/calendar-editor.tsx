@@ -167,7 +167,9 @@ export function CalendarEditor({ widget, widgetData, childWidgets = [] }: Widget
     for (const event of allEvents) {
         const key = format(event.date, 'yyyy-MM-dd');
         const color =
-            event.source === 'manual' ? MANUAL_COLOR : (widgetColors[event.widgetId] ?? MANUAL_COLOR);
+            event.source === 'manual'
+                ? MANUAL_COLOR
+                : (widgetColors[event.widgetId] ?? MANUAL_COLOR);
         if (!colorsByDate[key]) colorsByDate[key] = [];
         if (!colorsByDate[key]!.includes(color)) colorsByDate[key]!.push(color);
     }
@@ -304,7 +306,9 @@ export function CalendarEditor({ widget, widgetData, childWidgets = [] }: Widget
                                                     type="button"
                                                     className="size-4 shrink-0 rounded-full border border-border transition-opacity hover:opacity-80 disabled:opacity-30"
                                                     style={{
-                                                        backgroundColor: enabled ? color : undefined,
+                                                        backgroundColor: enabled
+                                                            ? color
+                                                            : undefined,
                                                     }}
                                                     disabled={!enabled}
                                                     aria-label="Pick color"
@@ -362,7 +366,9 @@ export function CalendarEditor({ widget, widgetData, childWidgets = [] }: Widget
                                         style={{ borderLeftColor: color, borderLeftWidth: 3 }}
                                     >
                                         <div className="flex flex-col gap-0.5">
-                                            <span className="text-sm font-medium">{event.title}</span>
+                                            <span className="text-sm font-medium">
+                                                {event.title}
+                                            </span>
                                             <span className="text-xs text-muted-foreground">
                                                 {event.widgetName}
                                             </span>
