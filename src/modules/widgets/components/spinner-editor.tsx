@@ -5,7 +5,7 @@ import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
-import { ArrowLeft, Check, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Check, ChevronRight, Plus, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -16,7 +16,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { updateSpinnerWidgetAction } from '@/modules/widgets/actions';
+import { advanceSpinnerAction, updateSpinnerWidgetAction } from '@/modules/widgets/actions';
 import type { WidgetEditorProps } from './widget-editor-props';
 
 const INTERVAL_OPTIONS = [
@@ -59,6 +59,8 @@ export function SpinnerEditor({ widget, widgetData }: WidgetEditorProps) {
         }
     } catch {}
 
+    const [activeIndex, setActiveIndex] = useState(currentIndex);
+
     const form = useForm<SpinnerFormValues>({
         resolver: zodResolver(spinnerFormSchema),
         defaultValues: {
@@ -72,6 +74,12 @@ export function SpinnerEditor({ widget, widgetData }: WidgetEditorProps) {
         control: form.control,
         name: 'items',
     });
+
+    const onNext = async () => {
+        if (initialItems.length === 0) return;
+        await advanceSpinnerAction({ widgetId: widget.id });
+        setActiveIndex((prev) => (prev + 1) % initialItems.length);
+    };
 
     const onSubmit = async (values: SpinnerFormValues) => {
         setSaveStatus('saving');
@@ -129,11 +137,17 @@ export function SpinnerEditor({ widget, widgetData }: WidgetEditorProps) {
                 )}
 
                 {initialItems.length > 0 && (
-                    <div className="flex flex-col gap-1 rounded-lg bg-muted p-4">
-                        <p className="text-xs text-muted-foreground">Current</p>
-                        <p className="text-lg font-semibold">
-                            {initialItems[currentIndex]?.text ?? initialItems[0]?.text}
-                        </p>
+                    <div className="flex items-center justify-between rounded-lg bg-muted p-4">
+                        <div className="flex flex-col gap-1">
+                            <p className="text-xs text-muted-foreground">Current</p>
+                            <p className="text-lg font-semibold">
+                                {initialItems[activeIndex]?.text ?? initialItems[0]?.text}
+                            </p>
+                        </div>
+                        <Button type="button" variant="outline" size="sm" onClick={onNext}>
+                            <ChevronRight className="size-4" />
+                            Next
+                        </Button>
                     </div>
                 )}
 
