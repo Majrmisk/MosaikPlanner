@@ -25,7 +25,11 @@ function getChildEvents(
                 const data = JSON.parse(sw.data) as { items: ChecklistItem[] };
                 for (const item of data.items ?? []) {
                     if (item.dueDate && !item.completed) {
-                        events.push({ id: item.id, title: item.text, date: parseISO(item.dueDate) });
+                        events.push({
+                            id: item.id,
+                            title: item.text,
+                            date: parseISO(item.dueDate),
+                        });
                     }
                 }
             } else if (sw.type === 'spinner') {
