@@ -106,16 +106,17 @@ export function DashboardGrid({ widgets, availableGroupWidgets, userGroups }: Da
                                 }));
                         }
                         return (
-                        <WidgetCard
-                            key={item.id}
-                            dashboardItem={item}
-                            group={
-                                item.widget.groupId
-                                    ? (userGroups.find((g) => g.id === item.widget.groupId) ?? null)
-                                    : null
-                            }
-                            childWidgets={childWidgets}
-                        />
+                            <WidgetCard
+                                key={item.id}
+                                dashboardItem={item}
+                                group={
+                                    item.widget.groupId
+                                        ? (userGroups.find((g) => g.id === item.widget.groupId) ??
+                                          null)
+                                        : null
+                                }
+                                childWidgets={childWidgets}
+                            />
                         );
                     })}
                 </SortableContext>
