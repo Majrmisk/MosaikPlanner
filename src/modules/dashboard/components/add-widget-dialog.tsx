@@ -162,9 +162,7 @@ export function AddWidgetDialog({
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="notes">Notes</SelectItem>
-                                                <SelectItem value="calendar" disabled>
-                                                    Calendar (TODO)
-                                                </SelectItem>
+                                                <SelectItem value="calendar">Calendar</SelectItem>
                                                 <SelectItem value="checklist">Checklist</SelectItem>
                                                 <SelectItem value="spinner" disabled>
                                                     Spinner (TODO)

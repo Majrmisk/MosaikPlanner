@@ -19,6 +19,7 @@ import type { Widget as WidgetRecord } from '@/lib/db/schemas/widgets';
 import type { Group } from '@/modules/groups/schemas';
 import { reorderWidgetsAction } from '@/modules/dashboard/actions';
 import { WidgetCard } from './widget-card';
+import type { ChildWidgetData } from './widget-card';
 import { AddWidgetDialog } from './add-widget-dialog';
 
 type DashboardGridProps = {
@@ -84,7 +85,27 @@ export function DashboardGrid({ widgets, availableGroupWidgets, userGroups }: Da
         >
             <div className="flex flex-wrap justify-center gap-4">
                 <SortableContext items={items.map((i) => i.id)} strategy={rectSortingStrategy}>
-                    {items.map((item) => (
+                    {items.map((item) => {
+                        let childWidgets: ChildWidgetData[] | undefined;
+                        if (item.widget.type === 'calendar') {
+                            childWidgets = items
+                                .filter((other) => {
+                                    if (other.widgetId === item.widgetId) return false;
+                                    if (!['checklist', 'spinner'].includes(other.widget.type))
+                                        return false;
+                                    if (item.widget.groupId) {
+                                        return other.widget.groupId === item.widget.groupId;
+                                    }
+                                    return other.widget.visibility === 'private';
+                                })
+                                .map((other) => ({
+                                    id: other.widgetId,
+                                    type: other.widget.type,
+                                    name: other.widget.name,
+                                    data: other.widget.data.data,
+                                }));
+                        }
+                        return (
                         <WidgetCard
                             key={item.id}
                             dashboardItem={item}
@@ -93,8 +114,10 @@ export function DashboardGrid({ widgets, availableGroupWidgets, userGroups }: Da
                                     ? (userGroups.find((g) => g.id === item.widget.groupId) ?? null)
                                     : null
                             }
+                            childWidgets={childWidgets}
                         />
-                    ))}
+                        );
+                    })}
                 </SortableContext>
                 <Card
                     className="flex h-68 w-64 cursor-pointer items-center justify-center border-dashed transition-colors hover:border-foreground/30 hover:bg-muted/50"
