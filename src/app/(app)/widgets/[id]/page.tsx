@@ -6,6 +6,7 @@ import { auth } from '@/auth';
 import { getWidgetById, getWidgetDataById } from '@/modules/widgets/repository';
 import { getDashboardItemByUserIdAndWidgetId } from '@/modules/dashboard/repository';
 import { getGroupById, getIsUserInGroup } from '@/modules/groups/queries';
+import { getCalendarChildWidgets } from '@/modules/widgets/queries';
 import { widgetEditors } from '@/modules/widgets/components/widget-editors';
 type WidgetPageProps = {
     params: Promise<{ id: string }>;
@@ -58,7 +59,18 @@ export default async function WidgetPage({ params }: WidgetPageProps) {
     const Editor = widgetEditors[widget.type];
 
     if (Editor) {
-        return <Editor widget={widget} widgetData={widgetData} group={group} />;
+        const childWidgets =
+            widget.type === 'calendar'
+                ? await getCalendarChildWidgets(widget.id, session.user.id)
+                : undefined;
+        return (
+            <Editor
+                widget={widget}
+                widgetData={widgetData}
+                group={group}
+                childWidgets={childWidgets}
+            />
+        );
     }
 
     return (
