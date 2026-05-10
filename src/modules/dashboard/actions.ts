@@ -43,8 +43,8 @@ export const createWidgetAction = async (input: {
 
     const initialData: Record<string, string> = {
         notes: JSON.stringify({ content: '' }),
+        calendar: JSON.stringify({ excludedWidgetIds: [], manualEvents: [] }),
         checklist: JSON.stringify({ items: [] }),
-        // TODO: calendar: JSON.stringify...
         // TODO: spinner: JSON.stringify...
         // TODO: expenses: JSON.stringify...
     };

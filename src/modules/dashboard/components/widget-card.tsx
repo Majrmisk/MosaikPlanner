@@ -23,10 +23,19 @@ import {
 type WidgetCardProps = {
     dashboardItem: DashboardWidget;
     group: Group | null;
+    childWidgets?: ChildWidgetData[];
+};
+
+export type ChildWidgetData = {
+    id: string;
+    type: string;
+    name: string;
+    data: string;
 };
 
 export type WidgetPreviewProps = {
     data: string;
+    childWidgets?: ChildWidgetData[];
 };
 
 function DefaultPreview() {
@@ -41,7 +50,7 @@ const widgetPreviews: Record<string, ComponentType<WidgetPreviewProps>> = {
     expenses: ExpensesPreview,
 };
 
-export function WidgetCard({ dashboardItem, group }: WidgetCardProps) {
+export function WidgetCard({ dashboardItem, group, childWidgets }: WidgetCardProps) {
     const router = useRouter();
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [removing, setRemoving] = useState(false);
@@ -117,7 +126,7 @@ export function WidgetCard({ dashboardItem, group }: WidgetCardProps) {
                     </Button>
                 </CardHeader>
                 <CardContent className="flex-1 overflow-hidden">
-                    <PreviewComponent data={widget.data.data} />
+                    <PreviewComponent data={widget.data.data} childWidgets={childWidgets} />
                 </CardContent>
             </Card>
             {isPrivate && (
