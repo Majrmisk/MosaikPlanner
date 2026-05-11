@@ -10,6 +10,7 @@ import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { User } from '@/modules/users/schemas';
+import { Checkbox } from '@/components/ui/checkbox';
 
 type CreateExpenseDialogProps = {
     open: boolean;
@@ -19,6 +20,7 @@ type CreateExpenseDialogProps = {
     groupUsers: User[];
     defaultPrice?: number;
     defaultPayedToIds?: string[];
+    isReimbursement: boolean;
 };
 
 export const CreateExpenseDialog = ({
@@ -29,6 +31,7 @@ export const CreateExpenseDialog = ({
     groupUsers,
     defaultPrice,
     defaultPayedToIds,
+    isReimbursement,
 }: CreateExpenseDialogProps) => {
     const form = useForm<Expense>({
         resolver: zodResolver(CreateExpenseFormSchema),
@@ -39,6 +42,7 @@ export const CreateExpenseDialog = ({
             payedBy: loggedInUser.id,
             payedFor: defaultPayedToIds ?? groupUsers.map((u) => u.id),
             payedAt: new Date(),
+            isReimbursement: isReimbursement,
         },
     });
 
@@ -148,6 +152,23 @@ export const CreateExpenseDialog = ({
                                 </Popover>
                             )}
                         />
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <Controller
+                            control={form.control}
+                            name="isReimbursement"
+                            render={({ field: f }) => (
+                                <Checkbox
+                                    id="isReimbursement"
+                                    checked={f.value}
+                                    onCheckedChange={f.onChange}
+                                />
+                            )}
+                        />
+                        <Label htmlFor="isReimbursement" className="cursor-pointer">
+                            This is a reimbursement
+                        </Label>
                     </div>
 
                     <Button type="button" onClick={form.handleSubmit(onCreateExpense)}>

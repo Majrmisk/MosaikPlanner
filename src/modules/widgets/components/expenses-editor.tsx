@@ -27,14 +27,20 @@ import { CreateExpenseDialog } from '@/modules/widgets/components/expenses-creat
 import { ExpensesChart } from '@/modules/widgets/components/expenses-chart';
 import { ExpensesDebts } from '@/modules/widgets/components/expenses-debts';
 
-export const CreateExpenseFormSchema = z.object({
-    id: z.string(),
-    name: z.string().trim().min(1, 'Expense title is required').max(200),
-    price: z.number().positive('Price must be > 0'),
-    payedBy: z.uuidv4(),
-    payedFor: z.array(z.uuidv4()).min(1, 'At least one person must be selected'),
-    payedAt: z.date(),
-});
+export const CreateExpenseFormSchema = z
+    .object({
+        id: z.string(),
+        name: z.string().trim().min(1, 'Expense title is required').max(200),
+        price: z.number().positive('Price must be > 0'),
+        payedBy: z.uuidv4(),
+        payedFor: z.array(z.uuidv4()).min(1, 'At least one person must be selected'),
+        payedAt: z.date(),
+        isReimbursement: z.boolean(),
+    })
+    .refine((data) => !data.isReimbursement || data.payedFor.length === 1, {
+        message: 'Only one person can be reimbursed at a time',
+        path: ['payedFor'],
+    });
 
 export type Expense = z.infer<typeof CreateExpenseFormSchema>;
 
@@ -50,6 +56,7 @@ export const ExpensesEditor = ({ widget, widgetData, group }: WidgetEditorProps)
     const [createExpenseOpen, setCreateExpenseOpen] = useState<boolean>(false);
     const [payDebtTo, setPayDebtTo] = useState<string[] | undefined>(undefined);
     const [payDebtAmout, setPayDebtAmout] = useState<number | undefined>(undefined);
+    const [createReimbursement, setCreateReimbursement] = useState<boolean>(false);
     const currentUser = useSession().data?.user;
 
     let initExpenses: ExpensesWidgetForm['expenses'] = [];
@@ -83,6 +90,7 @@ export const ExpensesEditor = ({ widget, widgetData, group }: WidgetEditorProps)
     const settleDebt = (toId: string, amount: number) => {
         setPayDebtTo([toId]);
         setPayDebtAmout(amount);
+        setCreateReimbursement(true);
         setCreateExpenseOpen(true);
     };
 
@@ -174,7 +182,14 @@ export const ExpensesEditor = ({ widget, widgetData, group }: WidgetEditorProps)
                             className="flex items-center justify-between rounded-lg border p-3"
                         >
                             <div className="flex flex-col gap-0.5">
-                                <span className="text-sm font-medium">{field.name}</span>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-sm font-medium">{field.name}</span>
+                                    {field.isReimbursement && (
+                                        <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                                            Reimbursement
+                                        </span>
+                                    )}
+                                </div>
                                 <span className="text-xs text-muted-foreground">
                                     Paid by{' '}
                                     {groupUsers.find((u) => u.id === field.payedBy)?.name ??
@@ -247,6 +262,7 @@ export const ExpensesEditor = ({ widget, widgetData, group }: WidgetEditorProps)
                     groupUsers={groupUsers}
                     defaultPayedToIds={payDebtTo}
                     defaultPrice={payDebtAmout}
+                    isReimbursement={createReimbursement}
                 />
             )}
         </div>
