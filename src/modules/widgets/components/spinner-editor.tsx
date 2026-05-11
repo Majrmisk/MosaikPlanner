@@ -89,6 +89,7 @@ export function SpinnerEditor({ widget, widgetData }: WidgetEditorProps) {
                 title: values.title,
                 items: values.items.map((i) => i.text),
                 intervalDays: values.intervalDays === 'none' ? null : Number(values.intervalDays),
+                lastTriggered: null,
             });
             setSaveStatus('saved');
             setTimeout(() => setSaveStatus('idle'), 2000);
