@@ -36,13 +36,10 @@ function getChildEvents(
                 const data = JSON.parse(sw.data) as SpinnerData;
                 if (data.intervalDays && data.items.length > 0 && data.lastTriggered) {
                     let date = parseISO(data.lastTriggered);
-                    let idx = data.currentIndex;
-                    for (let i = 0; i < 52; i++) {
-                        date = addDays(date, data.intervalDays);
-                        const text = data.items[idx % data.items.length];
-                        if (text) events.push({ id: `${sw.id}-${i}`, title: text, date });
-                        idx++;
-                    }
+                    const idx = data.currentIndex + 1; // so we get the next one
+                    date = addDays(date, data.intervalDays);
+                    const text = data.items[idx % data.items.length];
+                    if (text) events.push({ id: `${sw.id}`, title: text, date });
                 }
             }
         } catch {}

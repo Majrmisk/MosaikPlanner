@@ -58,6 +58,7 @@ export const updateSpinnerWidgetAction = async (input: {
     title: string;
     items: string[];
     intervalDays: number | null;
+    lastTriggered: string | null;
 }) => {
     const userId = await getCurrentUserId();
     const { widgetId, title, items, intervalDays } = updateSpinnerFormSchema.parse(input);
@@ -82,7 +83,7 @@ export const updateSpinnerWidgetAction = async (input: {
         lastTriggered = parsed.lastTriggered ?? null;
     } catch {}
 
-    if (intervalDays && !lastTriggered) {
+    if (intervalDays) {
         lastTriggered = new Date().toISOString().split('T')[0];
     }
 
