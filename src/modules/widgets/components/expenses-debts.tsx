@@ -68,10 +68,9 @@ const calcDebts = (expenses: Expense[]): Map<string, Map<string, number>> => {
 
     expenses.forEach((expense) => {
         if (expense.isReimbursement) {
-            // payedBy is repaying the single person in payedFor
             const creditorId = expense.payedFor[0];
-            // reduce creditor's debt toward payedBy (or add negative = reverse debt)
-            addDebt(creditorId, expense.payedBy, -expense.price);
+            // payedBy (A) is paying creditorId (B), reducing A's debt to B
+            addDebt(expense.payedBy, creditorId, -expense.price);
         } else {
             const share = expense.price / expense.payedFor.length;
             expense.payedFor.forEach((p) => {
