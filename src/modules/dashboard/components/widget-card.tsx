@@ -127,7 +127,11 @@ export function WidgetCard({ dashboardItem, group, childWidgets }: WidgetCardPro
                     </Button>
                 </CardHeader>
                 <CardContent className="flex-1 overflow-hidden">
-                    <PreviewComponent data={widget.data.data} widgetId={dashboardItem.widgetId} childWidgets={childWidgets} />
+                    <PreviewComponent
+                        data={widget.data.data}
+                        widgetId={dashboardItem.widgetId}
+                        childWidgets={childWidgets}
+                    />
                 </CardContent>
             </Card>
             {isPrivate && (
