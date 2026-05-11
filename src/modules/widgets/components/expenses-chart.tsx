@@ -77,7 +77,9 @@ const calcSpent = (expenses: Expense[]): MonthlySpending[] => {
     const filterDate = new Date();
     filterDate.setMonth(filterDate.getMonth() - 6);
 
-    const filtered = expenses.filter((e) => new Date(e.payedAt) > filterDate);
+    const filtered = expenses
+        .filter((e) => new Date(e.payedAt) > filterDate)
+        .filter((e) => !e.isReimbursement);
 
     const byMonth = Object.groupBy(
         filtered,
