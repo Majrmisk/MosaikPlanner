@@ -16,6 +16,10 @@ export const ExpensesDebts = ({
     onSettleDebt,
 }: ExpensesDebtsProps) => {
     const debts = calcDebts(expenses);
+    const hasDebts = debts.size;
+    if (!hasDebts) {
+        return null;
+    }
 
     return (
         <div className="flex flex-col gap-2">
@@ -54,21 +58,50 @@ export const ExpensesDebts = ({
 const calcDebts = (expenses: Expense[]): Map<string, Map<string, number>> => {
     const DebtsMap = new Map<string, Map<string, number>>();
 
-    expenses.forEach((expense) => {
-        const share = expense.price / expense.payedFor.length;
-        expense.payedFor.forEach((p) => {
-            if (p === expense.payedBy) {
-                return;
-            }
+    const addDebt = (debtorId: string, creditorId: string, amount: number) => {
+        if (!DebtsMap.has(debtorId)) {
+            DebtsMap.set(debtorId, new Map());
+        }
+        const owes = DebtsMap.get(debtorId)!;
+        owes.set(creditorId, (owes.get(creditorId) ?? 0) + amount);
+    };
 
-            const debtor = DebtsMap.get(p);
-            if (debtor !== undefined) {
-                const owesAmount = debtor.get(expense.payedBy) ?? 0;
-                debtor.set(expense.payedBy, owesAmount + share);
+    expenses.forEach((expense) => {
+        if (expense.isReimbursement) {
+            // payedBy is repaying the single person in payedFor
+            const creditorId = expense.payedFor[0];
+            // reduce creditor's debt toward payedBy (or add negative = reverse debt)
+            addDebt(creditorId, expense.payedBy, -expense.price);
+        } else {
+            const share = expense.price / expense.payedFor.length;
+            expense.payedFor.forEach((p) => {
+                if (p === expense.payedBy) return;
+                addDebt(p, expense.payedBy, share);
+            });
+        }
+    });
+
+    // Remove zero or negative net debts, and cancel out A→B / B→A pairs
+    DebtsMap.forEach((owes, debtorId) => {
+        owes.forEach((amount, creditorId) => {
+            const reverse = DebtsMap.get(creditorId)?.get(debtorId) ?? 0;
+            if (amount <= reverse) {
+                owes.delete(creditorId);
+                DebtsMap.get(creditorId)?.set(debtorId, reverse - amount);
             } else {
-                DebtsMap.set(p, new Map([[expense.payedBy, share]]));
+                owes.set(creditorId, amount - reverse);
+                DebtsMap.get(creditorId)?.set(debtorId, 0);
             }
         });
+        // Clean up zero entries
+        owes.forEach((amount, creditorId) => {
+            if (amount <= 0) owes.delete(creditorId);
+        });
+    });
+
+    // Remove empty debtor entries
+    DebtsMap.forEach((owes, debtorId) => {
+        if (owes.size === 0) DebtsMap.delete(debtorId);
     });
 
     return DebtsMap;
