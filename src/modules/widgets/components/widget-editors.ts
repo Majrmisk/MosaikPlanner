@@ -5,7 +5,7 @@ import { NotesEditor } from './notes-editor';
 import { CalendarEditor } from './calendar-editor';
 import { ChecklistEditor } from './checklist-editor';
 import { SpinnerEditor } from './spinner-editor';
-import { ExpensesEditor } from "./expenses-editor";
+import { ExpensesEditor } from './expenses-editor';
 
 export const widgetEditors: Partial<Record<WidgetType, ComponentType<WidgetEditorProps>>> = {
     notes: NotesEditor,
