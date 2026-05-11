@@ -23,7 +23,7 @@ type SpinnerData = {
     items: string[];
     currentIndex: number;
     intervalDays: number | null;
-    lastTriggered: string | null;
+    lastTriggered: string;
 };
 
 type CalendarEvent = {
@@ -71,23 +71,21 @@ function parseEventsFromChildren(
                 }
             } else if (widget.type === 'spinner') {
                 const data = JSON.parse(widgetData.data) as SpinnerData;
+                const date = parseISO(data.lastTriggered);
+
                 if (data.intervalDays && data.items.length > 0 && data.lastTriggered) {
-                    let date = parseISO(data.lastTriggered);
-                    let idx = data.currentIndex;
-                    for (let i = 0; i < 52; i++) {
-                        date = addDays(date, data.intervalDays);
-                        const itemText = data.items[idx % data.items.length];
-                        if (itemText) {
-                            events.push({
-                                id: `${widget.id}-${i}`,
-                                date,
-                                title: itemText,
-                                widgetId: widget.id,
-                                widgetName: widget.name,
-                                source: 'spinner',
-                            });
-                        }
-                        idx++;
+                    const nextIterationIndex = data.currentIndex + 1; // so we get the next one
+                    const nextIterationDate = addDays(date, data.intervalDays);
+                    const nextIterationText = data.items[nextIterationIndex % data.items.length];
+                    if (nextIterationText) {
+                        events.push({
+                            id: `${widget.id}`,
+                            date: nextIterationDate,
+                            title: nextIterationText,
+                            widgetId: widget.id,
+                            widgetName: widget.name,
+                            source: 'spinner',
+                        });
                     }
                 }
             }
