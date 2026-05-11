@@ -8,7 +8,7 @@ import {
     updateCalendarFormSchema,
     updateSpinnerFormSchema,
     advanceSpinnerSchema,
-    updateExpenseFormSchema
+    updateExpenseFormSchema,
 } from './schemas';
 import { getWidgetById, getWidgetDataById, updateWidget, updateWidgetData } from './repository';
 import { getDashboardItemByUserIdAndWidgetId } from '@/modules/dashboard/repository';
