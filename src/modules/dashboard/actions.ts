@@ -51,7 +51,7 @@ export const createWidgetAction = async (input: {
             lastTriggered: new Date().toISOString().split('T')[0],
         }),
         calendar: JSON.stringify({ excludedWidgetIds: [], manualEvents: [] }),
-        // TODO: expenses: JSON.stringify...
+        expenses: JSON.stringify({ expenses: [] }),
     };
 
     const widgetData = await createWidgetData({
