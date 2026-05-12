@@ -98,14 +98,16 @@ const verifyPassword = async (password: string, passwordSalt: string, passwordHa
     );
 };
 
-export const createGroupAction = async (input: CreateGroupActionInput): Promise<Group> => {
+export const createGroupAction = async (
+    input: CreateGroupActionInput,
+): Promise<{ data: Group } | { error: string }> => {
     const currentUserId = await getCurrentUserId();
     const data = createGroupActionSchema.parse(input);
 
     const existingGroup = await getGroupByName(data.name);
 
     if (existingGroup) {
-        throw new Error(groupAlreadyExistsMessage);
+        return { error: groupAlreadyExistsMessage };
     }
 
     const passwordRecord = await createPasswordRecord(data.password);
@@ -120,7 +122,7 @@ export const createGroupAction = async (input: CreateGroupActionInput): Promise<
         });
     } catch (error) {
         if (isUniqueGroupNameConstraintError(error)) {
-            throw new Error(groupAlreadyExistsMessage);
+            return { error: groupAlreadyExistsMessage };
         }
 
         throw error;
@@ -135,25 +137,29 @@ export const createGroupAction = async (input: CreateGroupActionInput): Promise<
     revalidatePath('/groups');
 
     return {
-        id: group.id,
-        name: group.name,
-        createdByUserId: group.createdByUserId,
-        color: group.color,
+        data: {
+            id: group.id,
+            name: group.name,
+            createdByUserId: group.createdByUserId,
+            color: group.color,
+        },
     };
 };
 
-export const updateGroupAction = async (input: UpdateGroupActionInput): Promise<Group> => {
+export const updateGroupAction = async (
+    input: UpdateGroupActionInput,
+): Promise<{ data: Group } | { error: string }> => {
     const currentUserId = await getCurrentUserId();
     const data = updateGroupActionSchema.parse(input);
     const group = await getGroupById(data.id);
 
     if (!group) {
-        throw new Error('Group not found');
+        return { error: 'Group not found' };
     }
 
     const isMember = await isUserInGroup(data.id, currentUserId);
     if (!isMember) {
-        throw new Error('Forbidden');
+        return { error: 'You are not a member of this group' };
     }
 
     let updatedGroup: Awaited<ReturnType<typeof updateGroup>>;
@@ -165,7 +171,7 @@ export const updateGroupAction = async (input: UpdateGroupActionInput): Promise<
         });
     } catch (error) {
         if (isUniqueGroupNameConstraintError(error)) {
-            throw new Error(groupAlreadyExistsMessage);
+            return { error: groupAlreadyExistsMessage };
         }
 
         throw error;
@@ -175,20 +181,24 @@ export const updateGroupAction = async (input: UpdateGroupActionInput): Promise<
     revalidatePath('/groups');
 
     return {
-        id: updatedGroup.id,
-        name: updatedGroup.name,
-        createdByUserId: updatedGroup.createdByUserId,
-        color: updatedGroup.color,
+        data: {
+            id: updatedGroup.id,
+            name: updatedGroup.name,
+            createdByUserId: updatedGroup.createdByUserId,
+            color: updatedGroup.color,
+        },
     };
 };
 
-export const joinGroupAction = async (input: JoinGroupInput): Promise<Group> => {
+export const joinGroupAction = async (
+    input: JoinGroupInput,
+): Promise<{ data: Group } | { error: string }> => {
     const currentUserId = await getCurrentUserId();
     const data = joinGroupSchema.parse(input);
     const group = await getGroupByName(data.groupName);
 
     if (!group) {
-        throw new Error('Group not found');
+        return { error: 'Group not found' };
     }
 
     const passwordMatches = await verifyPassword(
@@ -198,13 +208,13 @@ export const joinGroupAction = async (input: JoinGroupInput): Promise<Group> => 
     );
 
     if (!passwordMatches) {
-        throw new Error('Invalid group password');
+        return { error: 'Invalid group password' };
     }
 
     const alreadyMember = await isUserInGroup(group.id, currentUserId);
 
     if (alreadyMember) {
-        throw new Error('You are already a member of this group');
+        return { error: 'You are already a member of this group' };
     }
 
     await addGroupMember({
@@ -216,10 +226,12 @@ export const joinGroupAction = async (input: JoinGroupInput): Promise<Group> => 
     revalidatePath('/groups');
 
     return {
-        id: group.id,
-        name: group.name,
-        createdByUserId: group.createdByUserId,
-        color: group.color,
+        data: {
+            id: group.id,
+            name: group.name,
+            createdByUserId: group.createdByUserId,
+            color: group.color,
+        },
     };
 };
 
