@@ -29,13 +29,13 @@ export function JoinGroupDialog({ open, onOpenChange }: JoinGroupDialogProps) {
 
     const onSubmit = async (values: JoinGroupFormValues) => {
         setError(null);
-        try {
-            await joinGroupAction(values);
-            form.reset();
-            onOpenChange(false);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Something went wrong');
+        const result = await joinGroupAction(values);
+        if ('error' in result) {
+            setError(result.error);
+            return;
         }
+        form.reset();
+        onOpenChange(false);
     };
 
     const pending = form.formState.isSubmitting;

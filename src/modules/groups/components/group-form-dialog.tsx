@@ -38,22 +38,26 @@ export function GroupFormDialog({ open, onOpenChange, mode, group }: GroupFormDi
 
     const onSubmit = async (values: FormValues) => {
         setError(null);
-        try {
-            if (mode === 'create') {
-                await createGroupAction({ ...values, color: selectedColor });
-                form.reset();
-                setSelectedColor(DEFAULT_COLOR);
-            } else {
-                await updateGroupAction({
-                    id: group.id,
-                    name: values.name,
-                    color: selectedColor,
-                });
+        if (mode === 'create') {
+            const result = await createGroupAction({ ...values, color: selectedColor });
+            if ('error' in result) {
+                setError(result.error);
+                return;
             }
-            onOpenChange(false);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Something went wrong');
+            form.reset();
+            setSelectedColor(DEFAULT_COLOR);
+        } else {
+            const result = await updateGroupAction({
+                id: group.id,
+                name: values.name,
+                color: selectedColor,
+            });
+            if ('error' in result) {
+                setError(result.error);
+                return;
+            }
         }
+        onOpenChange(false);
     };
 
     const pending = form.formState.isSubmitting;
