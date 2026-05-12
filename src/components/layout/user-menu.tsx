@@ -45,9 +45,11 @@ export function UserMenu({ user }: UserMenuProps) {
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="sm:hidden" />
-                <DropdownMenuItem disabled>
-                    <Settings className="mr-2 size-4" />
-                    Settings
+                <DropdownMenuItem asChild>
+                    <Link href="/settings">
+                        <Settings className="mr-2 size-4" />
+                        Settings
+                    </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/' })}>

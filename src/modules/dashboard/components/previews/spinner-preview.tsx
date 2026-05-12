@@ -35,9 +35,7 @@ export function SpinnerPreview({ data, widgetId }: WidgetPreviewProps) {
     } catch {}
 
     const nextSpinDate =
-        intervalDays && lastTriggered
-            ? addDays(parseISO(lastTriggered), intervalDays)
-            : null;
+        intervalDays && lastTriggered ? addDays(parseISO(lastTriggered), intervalDays) : null;
 
     if (items.length === 0) {
         return <p className="text-xs text-muted-foreground">No items</p>;
@@ -62,12 +60,14 @@ export function SpinnerPreview({ data, widgetId }: WidgetPreviewProps) {
                     {nextSpinDate && (
                         <>
                             {' '}
-                            (<strong>
+                            (
+                            <strong>
                                 {nextSpinDate.toLocaleDateString('cs-CZ', {
                                     day: 'numeric',
                                     month: 'short',
                                 })}
-                            </strong>)
+                            </strong>
+                            )
                         </>
                     )}
                 </p>
