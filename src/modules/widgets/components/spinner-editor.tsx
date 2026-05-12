@@ -5,6 +5,7 @@ import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
+import { addDays, parseISO } from 'date-fns';
 import { ArrowLeft, Check, ChevronRight, Plus, Trash2, Users } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -45,17 +46,22 @@ export function SpinnerEditor({ widget, widgetData, group }: WidgetEditorProps) 
     let initialItems: SpinnerFormValues['items'] = [];
     let initialIntervalDays: SpinnerFormValues['intervalDays'] = 'none';
     let currentIndex = 0;
+    let nextSpinDate: Date | null = null;
     try {
         const parsed = JSON.parse(widgetData.data) as {
             items?: string[];
             intervalDays?: number | null;
             currentIndex?: number;
+            lastTriggered?: string | null;
         };
         initialItems = (parsed.items ?? []).map((text) => ({ id: crypto.randomUUID(), text }));
         currentIndex = parsed.currentIndex ?? 0;
         const days = parsed.intervalDays;
         if (days === 1 || days === 7 || days === 14 || days === 30) {
             initialIntervalDays = String(days) as SpinnerFormValues['intervalDays'];
+        }
+        if (days && parsed.lastTriggered) {
+            nextSpinDate = addDays(parseISO(parsed.lastTriggered), days);
         }
     } catch {}
 
@@ -152,6 +158,17 @@ export function SpinnerEditor({ widget, widgetData, group }: WidgetEditorProps) 
                             <p className="text-lg font-semibold">
                                 {initialItems[activeIndex]?.text ?? initialItems[0]?.text}
                             </p>
+                            {nextSpinDate && (
+                                <p className="text-xs text-muted-foreground">
+                                    Next spin:{' '}
+                                    <strong>
+                                        {nextSpinDate.toLocaleDateString('cs-CZ', {
+                                            day: 'numeric',
+                                            month: 'short',
+                                        })}
+                                    </strong>
+                                </p>
+                            )}
                         </div>
                         <Button type="button" variant="outline" size="sm" onClick={onNext}>
                             <ChevronRight className="size-4" />
