@@ -56,52 +56,54 @@ export const ExpensesDebts = ({
 };
 
 const calcDebts = (expenses: Expense[]): Map<string, Map<string, number>> => {
-    const DebtsMap = new Map<string, Map<string, number>>();
-
-    const addDebt = (debtorId: string, creditorId: string, amount: number) => {
-        if (!DebtsMap.has(debtorId)) {
-            DebtsMap.set(debtorId, new Map());
-        }
-        const owes = DebtsMap.get(debtorId)!;
-        owes.set(creditorId, (owes.get(creditorId) ?? 0) + amount);
-    };
+    // Step 1: compute net balance per person.
+    // Positive = creditor (is owed money), negative = debtor (owes money).
+    const balance = new Map<string, number>();
+    const add = (id: string, delta: number) =>
+        balance.set(id, (balance.get(id) ?? 0) + delta);
 
     expenses.forEach((expense) => {
         if (expense.isReimbursement) {
-            const creditorId = expense.payedFor[0];
-            // payedBy (A) is paying creditorId (B), reducing A's debt to B
-            addDebt(expense.payedBy, creditorId, -expense.price);
+            // payedBy sends money to payedFor[0]
+            add(expense.payedBy, expense.price);
+            add(expense.payedFor[0], -expense.price);
         } else {
             const share = expense.price / expense.payedFor.length;
-            expense.payedFor.forEach((p) => {
-                if (p === expense.payedBy) return;
-                addDebt(p, expense.payedBy, share);
-            });
+            add(expense.payedBy, expense.price);
+            expense.payedFor.forEach((p) => add(p, -share));
         }
     });
 
-    // Remove zero or negative net debts, and cancel out A→B / B→A pairs
-    DebtsMap.forEach((owes, debtorId) => {
-        owes.forEach((amount, creditorId) => {
-            const reverse = DebtsMap.get(creditorId)?.get(debtorId) ?? 0;
-            if (amount <= reverse) {
-                owes.delete(creditorId);
-                DebtsMap.get(creditorId)?.set(debtorId, reverse - amount);
-            } else {
-                owes.set(creditorId, amount - reverse);
-                DebtsMap.get(creditorId)?.set(debtorId, 0);
-            }
-        });
-        // Clean up zero entries
-        owes.forEach((amount, creditorId) => {
-            if (amount <= 0) owes.delete(creditorId);
-        });
+    // Step 2: greedy cash-flow minimization (max-debtor ↔ max-creditor).
+    // Ref: https://github.com/Sarvesh30112002/Cash-flow-minimizer
+    const creditors: { id: string; amount: number }[] = [];
+    const debtors: { id: string; amount: number }[] = [];
+
+    balance.forEach((amount, id) => {
+        if (amount > 0.001) creditors.push({ id, amount });
+        else if (amount < -0.001) debtors.push({ id, amount: -amount });
     });
 
-    // Remove empty debtor entries
-    DebtsMap.forEach((owes, debtorId) => {
-        if (owes.size === 0) DebtsMap.delete(debtorId);
-    });
+    const result = new Map<string, Map<string, number>>();
 
-    return DebtsMap;
+    while (creditors.length && debtors.length) {
+        // Pick largest creditor and largest debtor
+        creditors.sort((a, b) => b.amount - a.amount);
+        debtors.sort((a, b) => b.amount - a.amount);
+
+        const creditor = creditors[0];
+        const debtor = debtors[0];
+        const settled = Math.min(creditor.amount, debtor.amount);
+
+        if (!result.has(debtor.id)) result.set(debtor.id, new Map());
+        result.get(debtor.id)!.set(creditor.id, settled);
+
+        creditor.amount -= settled;
+        debtor.amount -= settled;
+
+        if (creditor.amount < 0.001) creditors.shift();
+        if (debtor.amount < 0.001) debtors.shift();
+    }
+
+    return result;
 };
