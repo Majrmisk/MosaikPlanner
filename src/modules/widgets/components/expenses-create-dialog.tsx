@@ -33,11 +33,19 @@ export const CreateExpenseDialog = ({
     defaultPayedToIds,
     isReimbursement,
 }: CreateExpenseDialogProps) => {
+    const isValidReimbursement =
+        isReimbursement && defaultPayedToIds && defaultPayedToIds.length === 1;
+    let ReimburseToName = '';
+    if (isValidReimbursement) {
+        const reimburseToPerson = groupUsers.filter((u) => u.id === defaultPayedToIds[0])[0];
+        ReimburseToName += reimburseToPerson.name;
+    }
+
     const form = useForm<Expense>({
         resolver: zodResolver(CreateExpenseFormSchema),
         defaultValues: {
             id: crypto.randomUUID(),
-            name: 'New expense',
+            name: isValidReimbursement ? 'Reimbursement for ' + ReimburseToName : 'New expense',
             price: defaultPrice ?? 1,
             payedBy: loggedInUser.id,
             payedFor: defaultPayedToIds ?? groupUsers.map((u) => u.id),
