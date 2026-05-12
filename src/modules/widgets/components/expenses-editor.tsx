@@ -128,7 +128,11 @@ export const ExpensesEditor = ({ widget, widgetData, group }: WidgetEditorProps)
                     {group && (
                         <span
                             className="flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium"
-                            style={{ color: group.color, borderColor: group.color }}
+                            style={{
+                                color: group.color,
+                                borderColor: group.color,
+                                backgroundColor: 'white',
+                            }}
                         >
                             {group.name}
                         </span>

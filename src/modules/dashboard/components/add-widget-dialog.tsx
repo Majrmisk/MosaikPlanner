@@ -114,6 +114,7 @@ export function AddWidgetDialog({
                                                         style={{
                                                             color: group.color,
                                                             borderColor: group.color,
+                                                            backgroundColor: 'white',
                                                         }}
                                                     >
                                                         {group.name}
