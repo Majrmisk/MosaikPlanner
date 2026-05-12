@@ -5,7 +5,7 @@ import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
-import { ArrowLeft, Check, ChevronRight, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Check, ChevronRight, Plus, Trash2, Users } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -39,7 +39,7 @@ const spinnerFormSchema = z.object({
 
 type SpinnerFormValues = z.infer<typeof spinnerFormSchema>;
 
-export function SpinnerEditor({ widget, widgetData }: WidgetEditorProps) {
+export function SpinnerEditor({ widget, widgetData, group }: WidgetEditorProps) {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
     let initialItems: SpinnerFormValues['items'] = [];
@@ -179,16 +179,37 @@ export function SpinnerEditor({ widget, widgetData }: WidgetEditorProps) {
                             {form.formState.errors.items.root.message}
                         </p>
                     )}
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => append({ id: crypto.randomUUID(), text: '' })}
-                        className="w-fit"
-                    >
-                        <Plus className="size-4" />
-                        Add item
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => append({ id: crypto.randomUUID(), text: '' })}
+                            className="w-fit"
+                        >
+                            <Plus className="size-4" />
+                            Add item
+                        </Button>
+                        {group && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                    group.members.forEach((member) => {
+                                        const name = member.name ?? member.email;
+                                        if (name) {
+                                            append({ id: crypto.randomUUID(), text: name });
+                                        }
+                                    });
+                                }}
+                                className="w-fit"
+                            >
+                                <Users className="size-4" />
+                                Fill with members
+                            </Button>
+                        )}
+                    </div>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
