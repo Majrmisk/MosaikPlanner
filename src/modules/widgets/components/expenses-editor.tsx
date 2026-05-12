@@ -26,6 +26,8 @@ import {
 import { CreateExpenseDialog } from '@/modules/widgets/components/expenses-create-dialog';
 import { ExpensesChart } from '@/modules/widgets/components/expenses-chart';
 import { ExpensesDebts } from '@/modules/widgets/components/expenses-debts';
+import { ExpensesFilter, ExpensesFilterValues } from '@/modules/widgets/components/expenses-filter';
+import { Separator } from '@/components/ui/separator';
 
 export const CreateExpenseFormSchema = z
     .object({
@@ -57,6 +59,13 @@ export const ExpensesEditor = ({ widget, widgetData, group }: WidgetEditorProps)
     const [payDebtTo, setPayDebtTo] = useState<string[] | undefined>(undefined);
     const [payDebtAmout, setPayDebtAmout] = useState<number | undefined>(undefined);
     const [createReimbursement, setCreateReimbursement] = useState<boolean>(false);
+    const [filter, setFilter] = useState<ExpensesFilterValues>({
+        type: 'all',
+        minPrice: 0,
+        maxPrice: undefined,
+        dateFrom: undefined,
+        dateTo: undefined,
+    });
     const currentUser = useSession().data?.user;
 
     let initExpenses: ExpensesWidgetForm['expenses'] = [];
@@ -79,6 +88,17 @@ export const ExpensesEditor = ({ widget, widgetData, group }: WidgetEditorProps)
     const { fields, append, remove } = useFieldArray({
         control: form.control,
         name: 'expenses',
+    });
+
+    const filteredFields = fields.filter((field) => {
+        if (filter.type === 'expenses' && field.isReimbursement) return false;
+        if (filter.type === 'reimbursements' && !field.isReimbursement) return false;
+        if (field.price < filter.minPrice) return false;
+        if (filter.maxPrice && field.price > filter.maxPrice) return false;
+
+        if (filter.dateFrom && field.payedAt < filter.dateFrom) return false;
+        if (filter.dateTo && field.payedAt > filter.dateTo) return false;
+        return true;
     });
 
     const loggedInUser = currentUser ? userSchema.safeParse(currentUser).data : null;
@@ -112,6 +132,7 @@ export const ExpensesEditor = ({ widget, widgetData, group }: WidgetEditorProps)
     const addExpense = (expense: Expense) => {
         append(expense);
         setCreateExpenseOpen(false);
+        setCreateReimbursement(false);
     };
 
     return (
@@ -180,70 +201,79 @@ export const ExpensesEditor = ({ widget, widgetData, group }: WidgetEditorProps)
                     <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                         Expenses
                     </p>
-                    {fields.map((field, index) => (
-                        <div
-                            key={field.id}
-                            className="flex items-center justify-between rounded-lg border p-3"
-                        >
-                            <div className="flex flex-col gap-0.5">
-                                <div className="flex items-center gap-1.5">
-                                    <span className="text-sm font-medium">{field.name}</span>
-                                    {field.isReimbursement && (
-                                        <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
-                                            Reimbursement
-                                        </span>
-                                    )}
+
+                    <ExpensesFilter value={filter} onChangeAction={setFilter} />
+
+                    <Separator />
+
+                    {filteredFields.map((field) => {
+                        const index = fields.findIndex((f) => f.id === field.id);
+                        return (
+                            <div
+                                key={field.id}
+                                className="flex items-center justify-between rounded-lg border p-3"
+                            >
+                                <div className="flex flex-col gap-0.5">
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="text-sm font-medium">{field.name}</span>
+                                        {field.isReimbursement && (
+                                            <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                                                Reimbursement
+                                            </span>
+                                        )}
+                                    </div>
+                                    <span className="text-xs text-muted-foreground">
+                                        Paid by{' '}
+                                        {groupUsers.find((u) => u.id === field.payedBy)?.name ??
+                                            field.payedBy}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">
+                                        For:{' '}
+                                        {field.payedFor
+                                            .map(
+                                                (id) =>
+                                                    groupUsers.find((u) => u.id === id)?.name ?? id,
+                                            )
+                                            .join(', ')}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">
+                                        {new Date(field.payedAt).toLocaleDateString()}
+                                    </span>
                                 </div>
-                                <span className="text-xs text-muted-foreground">
-                                    Paid by{' '}
-                                    {groupUsers.find((u) => u.id === field.payedBy)?.name ??
-                                        field.payedBy}
-                                </span>
-                                <span className="text-xs text-muted-foreground">
-                                    For:{' '}
-                                    {field.payedFor
-                                        .map(
-                                            (id) => groupUsers.find((u) => u.id === id)?.name ?? id,
-                                        )
-                                        .join(', ')}
-                                </span>
-                                <span className="text-xs text-muted-foreground">
-                                    {new Date(field.payedAt).toLocaleDateString()}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-semibold">
+                                        ${field.price.toFixed(2)}
+                                    </span>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="text-destructive hover:text-destructive"
+                                            >
+                                                <Trash2 className="size-4" />
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>Remove expense?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    This will remove <strong>{field.name}</strong>{' '}
+                                                    from the list. This action cannot be undone.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                <AlertDialogAction onClick={() => remove(index)}>
+                                                    Remove
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm font-semibold">
-                                    ${field.price.toFixed(2)}
-                                </span>
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="text-destructive hover:text-destructive"
-                                        >
-                                            <Trash2 className="size-4" />
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>Remove expense?</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                This will remove <strong>{field.name}</strong> from
-                                                the list. This action cannot be undone.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => remove(index)}>
-                                                Remove
-                                            </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                            </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
 
