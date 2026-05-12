@@ -1,4 +1,4 @@
-export default function DashboardLoading() {
+const DashboardLoading = () => {
     return (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(min(18rem,100%),18rem))] justify-center gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -6,4 +6,6 @@ export default function DashboardLoading() {
             ))}
         </div>
     );
-}
+};
+
+export default DashboardLoading;

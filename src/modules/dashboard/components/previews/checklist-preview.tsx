@@ -2,7 +2,7 @@ import { CalendarDays } from 'lucide-react';
 import type { WidgetPreviewProps } from '../widget-card';
 import type { ChecklistItem } from '@/modules/widgets/schemas';
 
-export function ChecklistPreview({ data }: WidgetPreviewProps) {
+export const ChecklistPreview = ({ data }: WidgetPreviewProps) => {
     let items: ChecklistItem[] = [];
     try {
         const parsed = JSON.parse(data) as { items: ChecklistItem[] };
@@ -48,4 +48,4 @@ export function ChecklistPreview({ data }: WidgetPreviewProps) {
             </div>
         </div>
     );
-}
+};

@@ -18,7 +18,7 @@ type UserMenuProps = {
     user: Session['user'];
 };
 
-export function UserMenu({ user }: UserMenuProps) {
+export const UserMenu = ({ user }: UserMenuProps) => {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -59,4 +59,4 @@ export function UserMenu({ user }: UserMenuProps) {
             </DropdownMenuContent>
         </DropdownMenu>
     );
-}
+};

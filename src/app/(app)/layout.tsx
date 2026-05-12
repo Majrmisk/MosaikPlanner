@@ -3,7 +3,7 @@ import { auth } from '@/auth';
 import { TopNavbar } from '@/components/layout/top-navbar';
 import { SessionProvider } from 'next-auth/react';
 
-export default async function AppLayout({ children }: { children: React.ReactNode }) {
+const AppLayout = async ({ children }: { children: React.ReactNode }) => {
     const session = await auth();
 
     if (!session?.user) {
@@ -20,4 +20,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             </SessionProvider>
         </>
     );
-}
+};
+
+export default AppLayout;
