@@ -28,7 +28,7 @@ const checklistFormSchema = z.object({
 
 type ChecklistFormValues = z.infer<typeof checklistFormSchema>;
 
-export function ChecklistEditor({ widget, widgetData }: WidgetEditorProps) {
+export function ChecklistEditor({ widget, widgetData, group }: WidgetEditorProps) {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
     const [openPopover, setOpenPopover] = useState<number | null>(null);
 
@@ -87,6 +87,14 @@ export function ChecklistEditor({ widget, widgetData }: WidgetEditorProps) {
                     Dashboard
                 </Link>
                 <div className="flex items-center gap-2">
+                    {group && (
+                        <span
+                            className="flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium"
+                            style={{ color: group.color, borderColor: group.color }}
+                        >
+                            {group.name}
+                        </span>
+                    )}
                     {saveStatus === 'saved' && (
                         <span className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Check className="size-3" />
