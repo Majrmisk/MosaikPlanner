@@ -2,6 +2,7 @@
 
 import { useTransition } from 'react';
 import { ChevronRight } from 'lucide-react';
+import { addDays, parseISO } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { advanceSpinnerAction } from '@/modules/widgets/actions';
 import type { WidgetPreviewProps } from '../widget-card';
@@ -19,16 +20,24 @@ export function SpinnerPreview({ data, widgetId }: WidgetPreviewProps) {
     let items: string[] = [];
     let currentIndex = 0;
     let intervalDays: number | null = null;
+    let lastTriggered: string | null = null;
     try {
         const parsed = JSON.parse(data) as {
             items?: string[];
             currentIndex?: number;
             intervalDays?: number | null;
+            lastTriggered?: string | null;
         };
         items = parsed.items ?? [];
         currentIndex = parsed.currentIndex ?? 0;
         intervalDays = parsed.intervalDays ?? null;
+        lastTriggered = parsed.lastTriggered ?? null;
     } catch {}
+
+    const nextSpinDate =
+        intervalDays && lastTriggered
+            ? addDays(parseISO(lastTriggered), intervalDays)
+            : null;
 
     if (items.length === 0) {
         return <p className="text-xs text-muted-foreground">No items</p>;
@@ -50,6 +59,17 @@ export function SpinnerPreview({ data, widgetId }: WidgetPreviewProps) {
             {intervalDays && (
                 <p className="text-xs text-muted-foreground">
                     {INTERVAL_LABELS[intervalDays] ?? `every ${intervalDays} days`}
+                    {nextSpinDate && (
+                        <>
+                            {' '}
+                            (<strong>
+                                {nextSpinDate.toLocaleDateString('cs-CZ', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                })}
+                            </strong>)
+                        </>
+                    )}
                 </p>
             )}
             <Button
