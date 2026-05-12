@@ -59,8 +59,7 @@ const calcDebts = (expenses: Expense[]): Map<string, Map<string, number>> => {
     // Step 1: compute net balance per person.
     // Positive = creditor (is owed money), negative = debtor (owes money).
     const balance = new Map<string, number>();
-    const add = (id: string, delta: number) =>
-        balance.set(id, (balance.get(id) ?? 0) + delta);
+    const add = (id: string, delta: number) => balance.set(id, (balance.get(id) ?? 0) + delta);
 
     expenses.forEach((expense) => {
         if (expense.isReimbursement) {
