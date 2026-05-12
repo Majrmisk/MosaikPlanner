@@ -59,29 +59,29 @@ export const ExpensesFilter = ({ value, onChangeAction }: ExpensesFilterProps) =
                 <label className="text-center text-xs font-medium">Price range</label>
                 <Slider
                     min={0}
-                    max={500}
-                    step={5}
-                    value={[value.minPrice, value.maxPrice ?? 500]}
+                    max={100}
+                    step={1}
+                    value={[value.minPrice, value.maxPrice ?? 100]}
                     onValueChange={([min, max]) =>
                         onChangeAction({
                             ...value,
                             minPrice: min,
-                            maxPrice: max === 500 ? undefined : max,
+                            maxPrice: max === 100 ? undefined : max,
                         })
                     }
                 />
                 <div className="relative h-4 text-xs text-muted-foreground">
                     <span
                         className="absolute -translate-x-1/2"
-                        style={{ left: `${(value.minPrice / 500) * 100}%` }}
+                        style={{ left: `${(value.minPrice / 100) * 100}%` }}
                     >
                         ${value.minPrice}
                     </span>
                     <span
                         className="absolute -translate-x-1/2"
-                        style={{ left: `${((value.maxPrice ?? 500) / 500) * 100}%` }}
+                        style={{ left: `${((value.maxPrice ?? 100) / 100) * 100}%` }}
                     >
-                        {value.maxPrice !== undefined ? `$${value.maxPrice}` : '$500+'}
+                        {value.maxPrice !== undefined ? `$${value.maxPrice}` : '$100+'}
                     </span>
                 </div>
             </div>
