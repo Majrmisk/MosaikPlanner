@@ -109,6 +109,14 @@ export function SpinnerEditor({ widget, widgetData, group }: WidgetEditorProps) 
                     Dashboard
                 </Link>
                 <div className="flex items-center gap-2">
+                    {group && (
+                        <span
+                            className="flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium"
+                            style={{ color: group.color, borderColor: group.color }}
+                        >
+                            {group.name}
+                        </span>
+                    )}
                     {saveStatus === 'saved' && (
                         <span className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Check className="size-3" />
