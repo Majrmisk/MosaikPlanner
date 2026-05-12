@@ -4,8 +4,7 @@ import { DrizzleAdapter } from '@auth/drizzle-adapter';
 import { db } from './lib/db';
 
 const getIsProtectedPath = (path: string) => {
-    // TODO: Add more protected paths here as we add more pages
-    const protectedPaths = ['/dashboard', '/widgets', '/groups'];
+    const protectedPaths = ['/dashboard', '/widgets', '/groups', '/settings'];
 
     return protectedPaths.some((p) => path.startsWith(p));
 };
