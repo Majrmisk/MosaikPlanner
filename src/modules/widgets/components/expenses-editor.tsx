@@ -139,14 +139,14 @@ export const ExpensesEditor = ({ widget, widgetData, group }: WidgetEditorProps)
                             Saved
                         </span>
                     )}
+                    <Button
+                        onClick={form.handleSubmit(onSubmit)}
+                        disabled={saveStatus === 'saving'}
+                        size="sm"
+                    >
+                        {saveStatus === 'saving' ? 'Saving...' : 'Save'}
+                    </Button>
                 </div>
-                <Button
-                    onClick={form.handleSubmit(onSubmit)}
-                    disabled={saveStatus === 'saving'}
-                    size="sm"
-                >
-                    {saveStatus === 'saving' ? 'Saving...' : 'Save'}
-                </Button>
             </div>
 
             <div className="flex flex-col gap-1">
