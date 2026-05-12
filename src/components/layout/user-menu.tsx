@@ -38,9 +38,11 @@ export function UserMenu({ user }: UserMenuProps) {
                         Dashboard
                     </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem disabled className="sm:hidden">
-                    <Users className="mr-2 size-4" />
-                    Groups
+                <DropdownMenuItem asChild className="sm:hidden">
+                    <Link href="/groups">
+                        <Users className="mr-2 size-4" />
+                        Groups
+                    </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="sm:hidden" />
                 <DropdownMenuItem disabled>
