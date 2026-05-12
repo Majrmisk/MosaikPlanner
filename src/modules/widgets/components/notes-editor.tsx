@@ -19,7 +19,7 @@ const noteFormSchema = z.object({
 
 type NoteFormValues = z.infer<typeof noteFormSchema>;
 
-export function NotesEditor({ widget, widgetData, group }: WidgetEditorProps) {
+export const NotesEditor = ({ widget, widgetData, group }: WidgetEditorProps) => {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
     let initialContent = '';
@@ -109,4 +109,4 @@ export function NotesEditor({ widget, widgetData, group }: WidgetEditorProps) {
             </div>
         </div>
     );
-}
+};

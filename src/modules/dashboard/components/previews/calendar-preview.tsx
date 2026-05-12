@@ -13,10 +13,10 @@ type SpinnerData = {
 
 type PreviewEvent = { id: string; title: string; date: Date };
 
-function getChildEvents(
+const getChildEvents = (
     childWidgets: WidgetPreviewProps['childWidgets'],
     excludedWidgetIds: string[],
-): PreviewEvent[] {
+): PreviewEvent[] => {
     const events: PreviewEvent[] = [];
     for (const sw of childWidgets ?? []) {
         if (excludedWidgetIds.includes(sw.id)) continue;
@@ -45,9 +45,9 @@ function getChildEvents(
         } catch {}
     }
     return events;
-}
+};
 
-export function CalendarPreview({ data, childWidgets }: WidgetPreviewProps) {
+export const CalendarPreview = ({ data, childWidgets }: WidgetPreviewProps) => {
     let manualEvents: CalendarManualEvent[] = [];
     let excludedWidgetIds: string[] = [];
     try {
@@ -101,4 +101,4 @@ export function CalendarPreview({ data, childWidgets }: WidgetPreviewProps) {
             ))}
         </div>
     );
-}
+};

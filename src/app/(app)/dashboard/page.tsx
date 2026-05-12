@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     title: 'Mosaik | Dashboard',
 };
 
-export default async function DashboardPage() {
+const DashboardPage = async () => {
     const session = await auth();
 
     if (!session?.user?.id) {
@@ -32,4 +32,6 @@ export default async function DashboardPage() {
             userGroups={userGroups}
         />
     );
-}
+};
+
+export default DashboardPage;

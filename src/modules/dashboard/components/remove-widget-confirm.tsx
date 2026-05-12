@@ -18,13 +18,13 @@ type RemoveWidgetConfirmProps = {
     loading: boolean;
 };
 
-export function RemoveWidgetConfirm({
+export const RemoveWidgetConfirm = ({
     open,
     onOpenChange,
     widgetName,
     onConfirm,
     loading,
-}: RemoveWidgetConfirmProps) {
+}: RemoveWidgetConfirmProps) => {
     return (
         <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogContent>
@@ -40,4 +40,4 @@ export function RemoveWidgetConfirm({
             </AlertDialogContent>
         </AlertDialog>
     );
-}
+};
