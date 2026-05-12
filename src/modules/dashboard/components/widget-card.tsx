@@ -39,9 +39,9 @@ export type WidgetPreviewProps = {
     widgetId: string;
 };
 
-function DefaultPreview() {
+const DefaultPreview = () => {
     return <p className="line-clamp-3 text-xs text-muted-foreground">No preview</p>;
-}
+};
 
 const widgetPreviews: Record<string, ComponentType<WidgetPreviewProps>> = {
     notes: NotesPreview,
@@ -51,7 +51,7 @@ const widgetPreviews: Record<string, ComponentType<WidgetPreviewProps>> = {
     expenses: ExpensesPreview,
 };
 
-export function WidgetCard({ dashboardItem, group, childWidgets }: WidgetCardProps) {
+export const WidgetCard = ({ dashboardItem, group, childWidgets }: WidgetCardProps) => {
     const router = useRouter();
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [removing, setRemoving] = useState(false);
@@ -149,4 +149,4 @@ export function WidgetCard({ dashboardItem, group, childWidgets }: WidgetCardPro
             )}
         </>
     );
-}
+};

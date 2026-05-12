@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { Button } from '@/components/ui/button';
 
-export default async function Home() {
+const Home = async () => {
     const session = await auth();
 
     if (session?.user) {
@@ -21,4 +21,6 @@ export default async function Home() {
             </Button>
         </main>
     );
-}
+};
+
+export default Home;

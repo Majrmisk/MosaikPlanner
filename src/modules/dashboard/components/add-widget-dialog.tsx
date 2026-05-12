@@ -39,21 +39,21 @@ type AddWidgetDialogProps = {
     userGroups: Group[];
 };
 
-function SubmitButton() {
+const SubmitButton = () => {
     const { pending } = useFormStatus();
     return (
         <Button type="submit" className="w-full" disabled={pending}>
             {pending ? 'Creating...' : 'Create widget'}
         </Button>
     );
-}
+};
 
-export function AddWidgetDialog({
+export const AddWidgetDialog = ({
     open,
     onOpenChange,
     availableGroupWidgets,
     userGroups,
-}: AddWidgetDialogProps) {
+}: AddWidgetDialogProps) => {
     const form = useForm<CreateWidgetFormValues>({
         resolver: zodResolver(createWidgetFormSchema),
         defaultValues: {
@@ -205,4 +205,4 @@ export function AddWidgetDialog({
             </DialogContent>
         </Dialog>
     );
-}
+};

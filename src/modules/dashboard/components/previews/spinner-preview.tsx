@@ -14,7 +14,7 @@ const INTERVAL_LABELS: Record<number, string> = {
     30: 'monthly',
 };
 
-export function SpinnerPreview({ data, widgetId }: WidgetPreviewProps) {
+export const SpinnerPreview = ({ data, widgetId }: WidgetPreviewProps) => {
     const [isPending, startTransition] = useTransition();
 
     let items: string[] = [];
@@ -85,4 +85,4 @@ export function SpinnerPreview({ data, widgetId }: WidgetPreviewProps) {
             {items.length > 1 && <p className="text-xs text-muted-foreground">Next: {nextItem}</p>}
         </div>
     );
-}
+};

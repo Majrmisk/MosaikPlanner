@@ -28,7 +28,11 @@ type DashboardGridProps = {
     userGroups: Group[];
 };
 
-export function DashboardGrid({ widgets, availableGroupWidgets, userGroups }: DashboardGridProps) {
+export const DashboardGrid = ({
+    widgets,
+    availableGroupWidgets,
+    userGroups,
+}: DashboardGridProps) => {
     const [addDialogOpen, setAddDialogOpen] = useState(false);
     const [items, setItems] = useState(widgets);
     const [prevWidgets, setPrevWidgets] = useState(widgets);
@@ -147,4 +151,4 @@ export function DashboardGrid({ widgets, availableGroupWidgets, userGroups }: Da
             />
         </DndContext>
     );
-}
+};

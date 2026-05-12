@@ -3,7 +3,7 @@
 import type { WidgetPreviewProps } from '../widget-card';
 import { ExpensesWidgetForm } from '@/modules/widgets/components/expenses-editor';
 
-export function ExpensesPreview({ data }: WidgetPreviewProps) {
+export const ExpensesPreview = ({ data }: WidgetPreviewProps) => {
     let initExpenses: ExpensesWidgetForm['expenses'] = [];
     try {
         const parsed = JSON.parse(data) as { expenses: ExpensesWidgetForm['expenses'] };
@@ -43,4 +43,4 @@ export function ExpensesPreview({ data }: WidgetPreviewProps) {
             )}
         </div>
     );
-}
+};

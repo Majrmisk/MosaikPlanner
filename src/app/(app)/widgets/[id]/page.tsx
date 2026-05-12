@@ -12,14 +12,14 @@ type WidgetPageProps = {
     params: Promise<{ id: string }>;
 };
 
-export async function generateMetadata({ params }: WidgetPageProps): Promise<Metadata> {
+export const generateMetadata = async ({ params }: WidgetPageProps): Promise<Metadata> => {
     const { id } = await params;
     const widget = await getWidgetById(id);
 
     return {
         title: widget ? `Mosaik | ${widget.name}` : 'Widget not found',
     };
-}
+};
 
 export default async function WidgetPage({ params }: WidgetPageProps) {
     const { id } = await params;
