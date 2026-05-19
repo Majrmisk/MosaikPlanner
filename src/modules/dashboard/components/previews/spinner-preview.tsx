@@ -46,6 +46,18 @@ export const SpinnerPreview = ({ data, widgetId }: WidgetPreviewProps) => {
 
     const handleNext = (e: React.MouseEvent) => {
         e.stopPropagation();
+        /**
+         * proc je tu pouzity startTransition? Co nam dava navic oproti tomu,
+         * kdybychom jen zavolali advanceSpinnerAction?
+         * useTransition je obecne spise pro zmeny stavu.
+         * Tady je predpokladam useTransition udelana jen kvuli isPending.
+         * IsPending nam ale treba dava i useMutation z tanstack query, ktery jsme
+         * se ucili - a krasne nam i dovoli napriklad ohandlovat error stavy,
+         * ktere se zde vubec neresi - co se stane, kdyz server action failne
+         * z jakehokoli duvodu?
+         *
+         * Prosim opravit.
+         */
         startTransition(async () => {
             await advanceSpinnerAction({ widgetId });
         });

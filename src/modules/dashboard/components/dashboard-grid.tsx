@@ -90,10 +90,18 @@ export const DashboardGrid = ({
             <div className="flex flex-wrap justify-center gap-4">
                 <SortableContext items={items.map((i) => i.id)} strategy={rectSortingStrategy}>
                     {items.map((item) => {
+                        /**
+                         * Toto by si zaslouzilo vlastni komponentu, co rikate? V teto nove
+                         * vzniknuvsi komponente se muzete rovnou zamyslet nad tim, proc se
+                         * child widgety vlastne mapuji az zde, a ne v server funkci, ktera
+                         * je getuje. Pokud to pujde, je to pravdepodobne spravnejsi reseni.
+                         * */
+                        // const childItems = item.widget.type === 'calendar' ? items.(...) : [];
                         let childWidgets: ChildWidgetData[] | undefined;
                         if (item.widget.type === 'calendar') {
                             childWidgets = items
                                 .filter((other) => {
+                                    // tento filter funciton by mohl mit samostanou fci kvuli citelnosti, ale je to nice to have.
                                     if (other.widgetId === item.widgetId) return false;
                                     if (!['checklist', 'spinner'].includes(other.widget.type))
                                         return false;

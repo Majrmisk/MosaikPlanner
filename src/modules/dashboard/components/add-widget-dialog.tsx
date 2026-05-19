@@ -99,6 +99,7 @@ export const AddWidgetDialog = ({
                                 <div className="flex flex-col gap-2">
                                     {availableGroupWidgets.map((w) => {
                                         const group = userGroups.find((g) => g.id === w.groupId);
+                                        // Toto by mohla byt samostatna komponenta, co rikate? toto je uz vazne nehezky zanorene a komplikovane
                                         return (
                                             <button
                                                 key={w.id}

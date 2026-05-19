@@ -34,6 +34,7 @@ export const ChecklistPreview = ({ data }: WidgetPreviewProps) => {
                         {item.dueDate && (
                             <span className="ml-auto shrink-0 flex items-center gap-1 text-xs text-muted-foreground">
                                 <CalendarDays className="size-3" />
+                                {/* Tento date muzeme pripravit mimo TSX (mimo render), ale to je spis kosmetika. nice to have */}
                                 {new Date(item.dueDate).toLocaleDateString('cs-CZ', {
                                     day: 'numeric',
                                     month: 'short',

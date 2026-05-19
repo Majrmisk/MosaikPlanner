@@ -30,6 +30,7 @@ export function GroupCard({ group, currentUserId }: GroupCardProps) {
     const [editOpen, setEditOpen] = useState(false);
 
     const handleLeave = async () => {
+        // useMutation? projdete si vsechny tyto usecasy, prosim, nebudu to psat ke kazdemu mistu
         setLeaving(true);
         try {
             await leaveGroupAction({ groupId: group.id });

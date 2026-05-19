@@ -4,6 +4,11 @@ import type { WidgetPreviewProps } from '../widget-card';
 import type { CalendarManualEvent } from '@/modules/widgets/schemas';
 
 type ChecklistItem = { id: string; text: string; completed: boolean; dueDate: string | null };
+/**
+ * Tento typ je duplicitni (s calendar-editor), ale hlavne sem nepatri - tady se bavim o kalendari,
+ * rozhodne zde nechci videt typ pro Spinner. Toto patri pravdepodobne nekam do types.
+ * Stejnetal ChecklistItem a dalsi typy, co jsou různě rozdrobené po repu.
+ * */
 type SpinnerData = {
     items: string[];
     currentIndex: number;
@@ -22,6 +27,16 @@ const getChildEvents = (
         if (excludedWidgetIds.includes(sw.id)) continue;
         try {
             if (sw.type === 'checklist') {
+                /**
+                 * Co se tady stane, pokud format dat nebude sedet? Co rika "as"?
+                 * Pokud tady chceme realnou typovou kontrolu (chceme!), musime to validovat,
+                 * ne jen utidit TS pomoci "as".
+                 *
+                 * Pokud budeme mit data typove cista, mozna nebude treba obalovat try catchem?
+                 *
+                 * tip #1: zodSchema.safeParse()
+                 * tip #2: zod.inferType (abychom nemeli schema a typ duplicitni)
+                 */
                 const data = JSON.parse(sw.data) as { items: ChecklistItem[] };
                 for (const item of data.items ?? []) {
                     if (item.dueDate && !item.completed) {
@@ -42,15 +57,23 @@ const getChildEvents = (
                     if (text) events.push({ id: `${sw.id}`, title: text, date });
                 }
             }
-        } catch {}
+        } catch {
+            // Urcite chceme chyby komplet ignorovat?
+        }
     }
     return events;
 };
 
 export const CalendarPreview = ({ data, childWidgets }: WidgetPreviewProps) => {
+    /**
+     * "let" v kodu konponenty je automaticky red flag, stejne jako try catch. Proc?
+     */
     let manualEvents: CalendarManualEvent[] = [];
     let excludedWidgetIds: string[] = [];
     try {
+        /**
+         * Proc parsujeme data zde? Zamyslete se prosim nad tim, jak casto se vola tento kod.
+         */
         const parsed = JSON.parse(data) as {
             manualEvents?: CalendarManualEvent[];
             excludedWidgetIds?: string[];
@@ -102,3 +125,25 @@ export const CalendarPreview = ({ data, childWidgets }: WidgetPreviewProps) => {
         </div>
     );
 };
+
+/**
+ * Prosim nez si prectete tento komentar, kde uvadim spravne odpovedi a realne pozadavky
+ * na zlepseni, zkuste se zamyslet nad otazkami, ktere jsem vyse napsal.
+ *
+ * Takze vecne: CalendarPreview je child component WidgetCard. WidgetCard je client komponenta,
+ * takze i CalendarPreview se realne renderuje na klientovi (mozna by se hodilo i zde uvest "use client").
+ * Jelikoz je WidgetCard client komponenta, tak se renderuje pomerne casto - pri kazde zmene statu,
+ * pozice atd. Kdyz React vyhodnoti potrebu rerenderu WidgetCard, rerenderuje i vsechny jeho potomky
+ * v DOM - tedy i nas CalendarPreview. To znamena, ze se kod v CalendarPreview muze spoustet pomerne
+ * dost casto, a to i v pripade, ze se nezmenila zadna data, ktera zpracovava. To je velice dulezite si
+ * uvedomit - render teto komponenty neni nejaka jednorazova akce, kde zparsuju data a mam vyresene. Tento
+ * kod, ktery muze byt pomerne vypocetne drahy, se pocita stale a stale dokola. Chci:
+ * 1) aby parsovani dat neprobihalo zde v komponente. Toto ma probihat vyse nekde v server funkci, ktera
+ *    se vola v server komponente, cimz se data getuji a pripravuji pro klienta. Tam podle typu widgetu
+ *    zparsuju data (safeParse, nikoli as) a pripravim je pro klienta ciste typovana.
+ * 2) let a try catch vyhodit, data rozumne memoizovat, aby netrpel vykon (uvidite, ze se tim zlepsi
+ *    response widgetu)
+ * 3) typy vyseparovat do spolecneho souboru podle schemat
+ *
+ * Vsechny tyto poznamky plati i pro ostatni preview komponenty samozrejme.
+ */

@@ -24,6 +24,7 @@ export const NotesEditor = ({ widget, widgetData, group }: WidgetEditorProps) =>
 
     let initialContent = '';
     try {
+        // nope. Six kdekoli, kde se vyskytuje. Viz CalendarPreview.
         const parsed = JSON.parse(widgetData.data) as { content: string };
         initialContent = parsed.content;
     } catch {}

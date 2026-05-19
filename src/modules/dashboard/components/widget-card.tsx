@@ -70,6 +70,7 @@ export const WidgetCard = ({ dashboardItem, group, childWidgets }: WidgetCardPro
     const isPrivate = widget.visibility === 'private';
 
     const handleRemove = async () => {
+        // useMutation?
         setRemoving(true);
         try {
             await removeWidgetFromDashboardAction(dashboardItem.id);

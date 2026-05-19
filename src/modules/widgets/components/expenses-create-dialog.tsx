@@ -54,6 +54,7 @@ export const CreateExpenseDialog = ({
         },
     });
 
+    // useWatch. nice to have
     const payedForValues = form.watch('payedFor') ?? [];
 
     const togglePayedFor = (memberId: string) => {
