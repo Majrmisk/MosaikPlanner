@@ -1,6 +1,5 @@
 'use client';
 
-import { z } from 'zod';
 import { WidgetEditorProps } from '@/modules/widgets/components/widget-editor-props';
 import { useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -23,35 +22,12 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { CreateExpenseDialog } from '@/modules/widgets/components/expenses-create-dialog';
-import { ExpensesChart } from '@/modules/widgets/components/expenses-chart';
-import { ExpensesDebts } from '@/modules/widgets/components/expenses-debts';
-import { ExpensesFilter, ExpensesFilterValues } from '@/modules/widgets/components/expenses-filter';
+import { CreateExpenseDialog } from '@/modules/widgets/components/expenses/expenses-create-dialog';
+import { ExpensesChart } from '@/modules/widgets/components/expenses/expenses-chart';
+import { ExpensesDebts } from '@/modules/widgets/components/expenses/expenses-debts';
+import { ExpensesFilter, ExpensesFilterValues } from '@/modules/widgets/components/expenses/expenses-filter';
 import { Separator } from '@/components/ui/separator';
-
-export const CreateExpenseFormSchema = z
-    .object({
-        id: z.string(),
-        name: z.string().trim().min(1, 'Expense title is required').max(200),
-        price: z.number().positive('Price must be > 0'),
-        payedBy: z.uuidv4(),
-        payedFor: z.array(z.uuidv4()).min(1, 'At least one person must be selected'),
-        payedAt: z.date(),
-        isReimbursement: z.boolean(),
-    })
-    .refine((data) => !data.isReimbursement || data.payedFor.length === 1, {
-        message: 'Only one person can be reimbursed at a time',
-        path: ['payedFor'],
-    });
-
-export type Expense = z.infer<typeof CreateExpenseFormSchema>;
-
-export const ExpensesWidgetFormSchema = z.object({
-    title: z.string().trim().min(1, 'Title is required').max(200),
-    expenses: z.array(CreateExpenseFormSchema),
-});
-
-export type ExpensesWidgetForm = z.infer<typeof ExpensesWidgetFormSchema>;
+import {Expense, ExpensesWidgetForm, ExpensesWidgetFormSchema} from "@/modules/widgets/components/expenses/schema";
 
 export const ExpensesEditor = ({ widget, widgetData, group }: WidgetEditorProps) => {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');

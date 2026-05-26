@@ -7,7 +7,7 @@ import {
     ChartTooltipContent,
 } from '@/components/ui/chart';
 import { Bar, BarChart, XAxis } from 'recharts';
-import { Expense } from '@/modules/widgets/components/expenses-editor';
+import { Expense } from '@/modules/widgets/components/expenses/expenses-editor';
 import { format } from 'date-fns';
 import { User } from '@/modules/users/schemas';
 

@@ -14,9 +14,9 @@ import { Calendar, CalendarDayButton } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ColorPicker } from '@/modules/groups/components/color-picker';
 import { updateCalendarWidgetAction } from '@/modules/widgets/actions';
-import type { WidgetEditorProps } from './widget-editor-props';
-import type { CalendarManualEvent } from '@/modules/widgets/schemas';
+import type { WidgetEditorProps } from '../widget-editor-props';
 import type { ChildWidget } from '@/modules/widgets/queries';
+import {CalendarManualEvent} from "@/modules/widgets/components/calendar/schema";
 
 type ChecklistItem = { id: string; text: string; completed: boolean; dueDate: string | null };
 type SpinnerData = {

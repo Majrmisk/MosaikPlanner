@@ -3,21 +3,14 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import Link from 'next/link';
 import { ArrowLeft, Check } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { updateNoteWidgetAction } from '@/modules/widgets/actions';
-import type { WidgetEditorProps } from './widget-editor-props';
-
-const noteFormSchema = z.object({
-    title: z.string().trim().min(1, 'Title is required').max(200),
-    content: z.string(),
-});
-
-type NoteFormValues = z.infer<typeof noteFormSchema>;
+import type { WidgetEditorProps } from '../widget-editor-props';
+import {updateNoteWidgetAction} from "@/backend/widgets/notes/mutations";
+import {noteFormSchema, NoteFormValues} from "@/modules/widgets/components/notes/schema";
 
 export const NotesEditor = ({ widget, widgetData, group }: WidgetEditorProps) => {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');

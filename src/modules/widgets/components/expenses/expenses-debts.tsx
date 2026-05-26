@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Expense } from '@/modules/widgets/components/expenses-editor';
+import { Expense } from '@/modules/widgets/components/expenses/expenses-editor';
 import { User } from '@/modules/users/schemas';
 
 type ExpensesDebtsProps = {

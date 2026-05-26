@@ -1,4 +1,4 @@
-import type { WidgetPreviewProps } from '../widget-card';
+import type { WidgetPreviewProps } from '../../../dashboard/components/widget-card';
 
 export const NotesPreview = ({ data }: WidgetPreviewProps) => {
     let content = '';

@@ -1,4 +1,3 @@
-import { CreateExpenseFormSchema, Expense } from '@/modules/widgets/components/expenses-editor';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -11,6 +10,7 @@ import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { User } from '@/modules/users/schemas';
 import { Checkbox } from '@/components/ui/checkbox';
+import {CreateExpenseFormSchema, Expense} from "@/modules/widgets/components/expenses/schema";
 
 type CreateExpenseDialogProps = {
     open: boolean;

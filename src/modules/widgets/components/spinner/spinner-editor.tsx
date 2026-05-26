@@ -18,7 +18,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { advanceSpinnerAction, updateSpinnerWidgetAction } from '@/modules/widgets/actions';
-import type { WidgetEditorProps } from './widget-editor-props';
+import type { WidgetEditorProps } from '../widget-editor-props';
 
 const INTERVAL_OPTIONS = [
     { value: 'none', label: 'No interval' },

@@ -1,7 +1,7 @@
 import { CalendarDays } from 'lucide-react';
 import { addDays, isSameDay, parseISO } from 'date-fns';
-import type { WidgetPreviewProps } from '../widget-card';
-import type { CalendarManualEvent } from '@/modules/widgets/schemas';
+import type { WidgetPreviewProps } from '../../../dashboard/components/widget-card';
+import {CalendarManualEvent} from "@/modules/widgets/components/calendar/schema";
 
 type ChecklistItem = { id: string; text: string; completed: boolean; dueDate: string | null };
 /**

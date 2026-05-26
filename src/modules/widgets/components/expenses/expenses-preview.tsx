@@ -1,7 +1,7 @@
 'use client';
 
-import type { WidgetPreviewProps } from '../widget-card';
-import { ExpensesWidgetForm } from '@/modules/widgets/components/expenses-editor';
+import type { WidgetPreviewProps } from '../../../dashboard/components/widget-card';
+import type { ExpensesWidgetForm } from '@/modules/widgets/components/expenses/schema';
 
 export const ExpensesPreview = ({ data }: WidgetPreviewProps) => {
     let initExpenses: ExpensesWidgetForm['expenses'] = [];

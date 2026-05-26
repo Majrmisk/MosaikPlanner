@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import Link from 'next/link';
 import { ArrowLeft, CalendarDays, Check, Plus, Trash2, X } from 'lucide-react';
 import { format } from 'date-fns';
@@ -12,21 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { updateChecklistWidgetAction } from '@/modules/widgets/actions';
-import type { WidgetEditorProps } from './widget-editor-props';
-
-const checklistFormSchema = z.object({
-    title: z.string().trim().min(1, 'Title is required').max(200),
-    items: z.array(
-        z.object({
-            id: z.uuid(),
-            text: z.string().trim().min(1, 'Item text is required').max(500),
-            completed: z.boolean(),
-            dueDate: z.iso.date().nullable(),
-        }),
-    ),
-});
-
-type ChecklistFormValues = z.infer<typeof checklistFormSchema>;
+import type { WidgetEditorProps } from '../widget-editor-props';
+import {checklistFormSchema, ChecklistFormValues,} from "@/modules/widgets/components/checklist/schema";
 
 export function ChecklistEditor({ widget, widgetData, group }: WidgetEditorProps) {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');

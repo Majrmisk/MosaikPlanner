@@ -1,59 +1,13 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { auth } from '@/auth';
-import {
-    updateNoteFormSchema,
-    updateChecklistFormSchema,
-    updateCalendarFormSchema,
-    updateSpinnerFormSchema,
-    advanceSpinnerSchema,
-    updateExpenseFormSchema,
-} from './schemas';
 import { getWidgetById, getWidgetDataById, updateWidget, updateWidgetData } from './repository';
 import { getDashboardItemByUserIdAndWidgetId } from '@/modules/dashboard/repository';
-import { Expense } from './components/expenses-editor';
-
-const getCurrentUserId = async (): Promise<string> => {
-    const session = await auth();
-    const userId = session?.user?.id;
-
-    if (!userId) {
-        throw new Error('Unauthorized');
-    }
-
-    return userId;
-};
-
-export const updateNoteWidgetAction = async (input: {
-    widgetId: string;
-    title: string;
-    content: string;
-}) => {
-    const userId = await getCurrentUserId();
-    const { widgetId, title, content } = updateNoteFormSchema.parse(input);
-
-    const widget = await getWidgetById(widgetId);
-    if (!widget) {
-        throw new Error('Widget not found');
-    }
-
-    if (widget.visibility === 'private') {
-        const dashboardItem = await getDashboardItemByUserIdAndWidgetId(userId, widgetId);
-        if (!dashboardItem) {
-            throw new Error('Widget not found');
-        }
-    }
-
-    await updateWidgetData(widget.dataId, {
-        data: JSON.stringify({ content }),
-    });
-
-    await updateWidget(widgetId, { name: title });
-
-    revalidatePath('/dashboard');
-    revalidatePath(`/widgets/${widgetId}`);
-};
+import {Expense, updateExpenseFormSchema} from "@/modules/widgets/components/expenses/schema";
+import {getCurrentUserId} from "@/backend/actions";
+import {updateChecklistFormSchema} from "@/modules/widgets/components/checklist/schema";
+import {updateCalendarFormSchema} from "@/modules/widgets/components/calendar/schema";
+import {advanceSpinnerSchema, updateSpinnerFormSchema} from "@/modules/widgets/components/spinner/schema";
 
 export const updateExpensesWidgetAction = async (input: {
     widgetId: string;
