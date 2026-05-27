@@ -14,7 +14,7 @@ import { Calendar, CalendarDayButton } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ColorPicker } from '@/modules/groups/components/color-picker';
 import type { WidgetEditorProps } from '../widget-editor-props';
-import type { ChildWidget } from '@/modules/widgets/queries';
+import type { ChildWidget } from '@/backend/widgets/queries';
 import {CalendarManualEvent} from "@/modules/widgets/components/calendar/schema";
 import {updateCalendarWidgetAction} from "@/backend/widgets/calendar/mutations";
 

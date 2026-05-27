@@ -3,7 +3,7 @@
 import {revalidatePath} from "next/cache";
 import {getWidgetById, updateWidget, updateWidgetData} from "@/modules/widgets/repository";
 import {getDashboardItemByUserIdAndWidgetId} from "@/modules/dashboard/repository";
-import {getCurrentUserId} from "@/backend/actions";
+import {getCurrentUserId} from "@/backend/queries";
 import {updateNoteFormSchema} from "@/modules/widgets/components/notes/schema";
 
 export const updateNoteWidgetAction = async (input: {

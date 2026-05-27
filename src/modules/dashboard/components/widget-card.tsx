@@ -12,13 +12,7 @@ import type { DashboardWidget } from '@/modules/dashboard/schemas';
 import type { Group } from '@/modules/groups/schemas';
 import { removeWidgetFromDashboardAction } from '@/modules/dashboard/actions';
 import { RemoveWidgetConfirm } from './remove-widget-confirm';
-import {
-    NotesPreview,
-    CalendarPreview,
-    ChecklistPreview,
-    SpinnerPreview,
-    ExpensesPreview,
-} from './previews';
+import {NotesPreview, CalendarPreview, ChecklistPreview, SpinnerPreview, ExpensesPreview} from "@/modules/widgets/components";
 
 type WidgetCardProps = {
     dashboardItem: DashboardWidget;

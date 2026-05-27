@@ -6,8 +6,8 @@ import { auth } from '@/auth';
 import { getWidgetById, getWidgetDataById } from '@/modules/widgets/repository';
 import { getDashboardItemByUserIdAndWidgetId } from '@/modules/dashboard/repository';
 import { getGroupWithMembersById, getIsUserInGroup } from '@/modules/groups/queries';
-import { getCalendarChildWidgets } from '@/modules/widgets/queries';
 import { widgetEditors } from '@/modules/widgets/components/widget-editors';
+import {getCalendarChildWidgets} from "@/backend/widgets/queries";
 type WidgetPageProps = {
     params: Promise<{ id: string }>;
 };

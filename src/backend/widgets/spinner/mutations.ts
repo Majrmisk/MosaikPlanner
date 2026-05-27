@@ -1,6 +1,6 @@
 'use server';
 
-import {getCurrentUserId} from "@/backend/actions";
+import {getCurrentUserId} from "@/backend/queries";
 import {getWidgetById, getWidgetDataById, updateWidget, updateWidgetData} from "@/modules/widgets/repository";
 import {getDashboardItemByUserIdAndWidgetId} from "@/modules/dashboard/repository";
 import {revalidatePath} from "next/cache";

@@ -1,6 +1,6 @@
 'use server';
 
-import {getCurrentUserId} from "@/backend/actions";
+import {getCurrentUserId} from "@/backend/queries";
 import {updateChecklistFormSchema} from "@/modules/widgets/components/checklist/schema";
 import {getWidgetById, updateWidget, updateWidgetData} from "@/modules/widgets/repository";
 import {getDashboardItemByUserIdAndWidgetId} from "@/modules/dashboard/repository";
