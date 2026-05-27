@@ -16,3 +16,17 @@ export const updateCalendarFormSchema = z.object({
 });
 
 export type CalendarManualEvent = z.infer<typeof calendarManualEventSchema>;
+export type PreviewEvent = {
+    id: string;
+    title: string;
+    date: Date
+};
+
+export type CalendarEvent = {
+    id: string;
+    date: Date;
+    title: string;
+    widgetId: string;
+    widgetName: string;
+    source: 'checklist' | 'spinner' | 'manual';
+};

@@ -1,22 +1,12 @@
 import { CalendarDays } from 'lucide-react';
 import { addDays, isSameDay, parseISO } from 'date-fns';
 import type { WidgetPreviewProps } from '../../../dashboard/components/widget-card';
-import {CalendarManualEvent} from "@/modules/widgets/components/calendar/schema";
-
-type ChecklistItem = { id: string; text: string; completed: boolean; dueDate: string | null };
-/**
- * Tento typ je duplicitni (s calendar-editor), ale hlavne sem nepatri - tady se bavim o kalendari,
- * rozhodne zde nechci videt typ pro Spinner. Toto patri pravdepodobne nekam do types.
- * Stejnetal ChecklistItem a dalsi typy, co jsou různě rozdrobené po repu.
- * */
-type SpinnerData = {
-    items: string[];
-    currentIndex: number;
-    intervalDays: number | null;
-    lastTriggered: string | null;
-};
-
-type PreviewEvent = { id: string; title: string; date: Date };
+import {
+    CalendarManualEvent,
+    PreviewEvent,
+} from "@/modules/widgets/components/calendar/schema";
+import {ChecklistItem} from "@/modules/widgets/components/checklist/schema";
+import {SpinnerData} from "@/modules/widgets/components/spinner/schema";
 
 const getChildEvents = (
     childWidgets: WidgetPreviewProps['childWidgets'],

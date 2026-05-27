@@ -13,3 +13,10 @@ export const advanceSpinnerSchema = z.object({
 });
 
 export type UpdateSpinnerFormInput = z.infer<typeof updateSpinnerFormSchema>;
+
+export type SpinnerData = {
+    items: string[];
+    currentIndex: number;
+    intervalDays: number | null;
+    lastTriggered: string;
+};

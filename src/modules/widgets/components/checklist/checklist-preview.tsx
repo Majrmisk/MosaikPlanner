@@ -1,6 +1,6 @@
 import { CalendarDays } from 'lucide-react';
 import type { WidgetPreviewProps } from '../../../dashboard/components/widget-card';
-import type { ChecklistItem } from '@/modules/widgets/schemas';
+import {ChecklistItem} from "@/modules/widgets/components/checklist/schema";
 
 export const ChecklistPreview = ({ data }: WidgetPreviewProps) => {
     let items: ChecklistItem[] = [];
