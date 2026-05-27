@@ -17,8 +17,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { advanceSpinnerAction, updateSpinnerWidgetAction } from '@/modules/widgets/actions';
 import type { WidgetEditorProps } from '../widget-editor-props';
+import {advanceSpinnerAction, updateSpinnerWidgetAction} from "@/backend/widgets/spinner/mutations";
 
 const INTERVAL_OPTIONS = [
     { value: 'none', label: 'No interval' },

@@ -1,18 +1,21 @@
 'use server';
 
-import {revalidatePath} from "next/cache";
+import {getCurrentUserId} from "@/backend/actions";
+import {updateCalendarFormSchema} from "@/modules/widgets/components/calendar/schema";
 import {getWidgetById, updateWidget, updateWidgetData} from "@/modules/widgets/repository";
 import {getDashboardItemByUserIdAndWidgetId} from "@/modules/dashboard/repository";
-import {getCurrentUserId} from "@/backend/actions";
-import {updateNoteFormSchema} from "@/modules/widgets/components/notes/schema";
+import {revalidatePath} from "next/cache";
 
-export const updateNoteWidgetAction = async (input: {
+export const updateCalendarWidgetAction = async (input: {
     widgetId: string;
     title: string;
-    content: string;
+    excludedWidgetIds: string[];
+    manualEvents: { id: string; title: string; date: string }[];
+    widgetColors: Record<string, string>;
 }) => {
     const userId = await getCurrentUserId();
-    const { widgetId, title, content } = updateNoteFormSchema.parse(input);
+    const { widgetId, title, excludedWidgetIds, manualEvents, widgetColors } =
+        updateCalendarFormSchema.parse(input);
 
     const widget = await getWidgetById(widgetId);
     if (!widget) {
@@ -27,7 +30,7 @@ export const updateNoteWidgetAction = async (input: {
     }
 
     await updateWidgetData(widget.dataId, {
-        data: JSON.stringify({ content }),
+        data: JSON.stringify({ excludedWidgetIds, manualEvents, widgetColors }),
     });
 
     await updateWidget(widgetId, { name: title });

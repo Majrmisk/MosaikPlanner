@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useSession } from 'next-auth/react';
 import { userSchema } from '@/modules/users/schemas';
-import { updateExpensesWidgetAction } from '@/modules/widgets/actions';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -28,6 +27,7 @@ import { ExpensesDebts } from '@/modules/widgets/components/expenses/expenses-de
 import { ExpensesFilter, ExpensesFilterValues } from '@/modules/widgets/components/expenses/expenses-filter';
 import { Separator } from '@/components/ui/separator';
 import {Expense, ExpensesWidgetForm, ExpensesWidgetFormSchema} from "@/modules/widgets/components/expenses/schema";
+import {updateExpensesWidgetAction} from "@/backend/widgets/expenses/mutations";
 
 export const ExpensesEditor = ({ widget, widgetData, group }: WidgetEditorProps) => {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');

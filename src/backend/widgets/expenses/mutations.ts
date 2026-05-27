@@ -1,18 +1,18 @@
 'use server';
 
-import {revalidatePath} from "next/cache";
+import {Expense, updateExpenseFormSchema} from "@/modules/widgets/components/expenses/schema";
+import {getCurrentUserId} from "@/backend/actions";
 import {getWidgetById, updateWidget, updateWidgetData} from "@/modules/widgets/repository";
 import {getDashboardItemByUserIdAndWidgetId} from "@/modules/dashboard/repository";
-import {getCurrentUserId} from "@/backend/actions";
-import {updateNoteFormSchema} from "@/modules/widgets/components/notes/schema";
+import {revalidatePath} from "next/cache";
 
-export const updateNoteWidgetAction = async (input: {
+export const updateExpensesWidgetAction = async (input: {
     widgetId: string;
     title: string;
-    content: string;
+    expenses: Expense[];
 }) => {
     const userId = await getCurrentUserId();
-    const { widgetId, title, content } = updateNoteFormSchema.parse(input);
+    const { widgetId, title, expenses } = updateExpenseFormSchema.parse(input);
 
     const widget = await getWidgetById(widgetId);
     if (!widget) {
@@ -27,7 +27,7 @@ export const updateNoteWidgetAction = async (input: {
     }
 
     await updateWidgetData(widget.dataId, {
-        data: JSON.stringify({ content }),
+        data: JSON.stringify({ expenses }),
     });
 
     await updateWidget(widgetId, { name: title });

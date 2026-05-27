@@ -1,18 +1,18 @@
 'use server';
 
-import {revalidatePath} from "next/cache";
+import {getCurrentUserId} from "@/backend/actions";
+import {updateChecklistFormSchema} from "@/modules/widgets/components/checklist/schema";
 import {getWidgetById, updateWidget, updateWidgetData} from "@/modules/widgets/repository";
 import {getDashboardItemByUserIdAndWidgetId} from "@/modules/dashboard/repository";
-import {getCurrentUserId} from "@/backend/actions";
-import {updateNoteFormSchema} from "@/modules/widgets/components/notes/schema";
+import {revalidatePath} from "next/cache";
 
-export const updateNoteWidgetAction = async (input: {
+export const updateChecklistWidgetAction = async (input: {
     widgetId: string;
     title: string;
-    content: string;
+    items: { id: string; text: string; completed: boolean; dueDate: string | null }[];
 }) => {
     const userId = await getCurrentUserId();
-    const { widgetId, title, content } = updateNoteFormSchema.parse(input);
+    const { widgetId, title, items } = updateChecklistFormSchema.parse(input);
 
     const widget = await getWidgetById(widgetId);
     if (!widget) {
@@ -27,7 +27,7 @@ export const updateNoteWidgetAction = async (input: {
     }
 
     await updateWidgetData(widget.dataId, {
-        data: JSON.stringify({ content }),
+        data: JSON.stringify({ items }),
     });
 
     await updateWidget(widgetId, { name: title });

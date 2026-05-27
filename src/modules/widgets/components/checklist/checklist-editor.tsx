@@ -10,9 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { updateChecklistWidgetAction } from '@/modules/widgets/actions';
 import type { WidgetEditorProps } from '../widget-editor-props';
 import {checklistFormSchema, ChecklistFormValues,} from "@/modules/widgets/components/checklist/schema";
+import {updateChecklistWidgetAction} from "@/backend/widgets/checklist/mutations";
 
 export function ChecklistEditor({ widget, widgetData, group }: WidgetEditorProps) {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');

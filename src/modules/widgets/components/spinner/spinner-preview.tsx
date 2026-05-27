@@ -4,8 +4,8 @@ import { useTransition } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { addDays, parseISO } from 'date-fns';
 import { Button } from '@/components/ui/button';
-import { advanceSpinnerAction } from '@/modules/widgets/actions';
 import type { WidgetPreviewProps } from '../../../dashboard/components/widget-card';
+import {advanceSpinnerAction} from "@/backend/widgets/spinner/mutations";
 
 const INTERVAL_LABELS: Record<number, string> = {
     1: 'daily',
