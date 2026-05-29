@@ -4,17 +4,76 @@ import { db, widgetsTable, dashboardItemsTable, widgetDataTable } from '@/lib/db
 import { groupMembersTable } from '@/lib/db/schemas/groups';
 import { eq, and, notInArray, inArray, ne } from 'drizzle-orm';
 import type { Widget as WidgetRecord } from '@/lib/db/schemas/widgets';
-import type { WidgetData as WidgetDataRecord } from '@/lib/db/schemas/widget-data';
+import {
+    notesDataSchema,
+    expensesDataSchema,
+    spinnerDataSchema,
+    calendarDataSchema,
+    checklistDataSchema,
+    type ParsedWidgetData,
+} from './schemas';
 
-export type ChildWidget = {
-    widget: WidgetRecord;
-    widgetData: WidgetDataRecord;
+export type { ParsedWidgetData };
+
+const safeJsonParse = (str: string): unknown => {
+    try {
+        return JSON.parse(str);
+    } catch {
+        return null;
+    }
 };
+
+export const parseExpensesData = (rawData: string): ParsedWidgetData => {
+    const result = expensesDataSchema.safeParse(safeJsonParse(rawData));
+    return result.success ? { widgetType: 'expenses', data: result.data } : null;
+};
+
+export const parseNotesData = (rawData: string): ParsedWidgetData => {
+    const result = notesDataSchema.safeParse(safeJsonParse(rawData));
+    return result.success ? { widgetType: 'notes', data: result.data } : null;
+};
+
+export const parseSpinnerData = (rawData: string): ParsedWidgetData => {
+    const result = spinnerDataSchema.safeParse(safeJsonParse(rawData));
+    return result.success ? { widgetType: 'spinner', data: result.data } : null;
+};
+
+export const parseCalendarData = (rawData: string): ParsedWidgetData => {
+    const result = calendarDataSchema.safeParse(safeJsonParse(rawData));
+    return result.success ? { widgetType: 'calendar', data: result.data } : null;
+};
+
+export const parseChecklistData = (rawData: string): ParsedWidgetData => {
+    const result = checklistDataSchema.safeParse(safeJsonParse(rawData));
+    return result.success ? { widgetType: 'checklist', data: result.data } : null;
+};
+
+export const parseWidgetData = (type: string, rawData: string): ParsedWidgetData => {
+    if (type === 'notes') return parseNotesData(rawData);
+    if (type === 'expenses') return parseExpensesData(rawData);
+    if (type === 'spinner') return parseSpinnerData(rawData);
+    if (type === 'calendar') return parseCalendarData(rawData);
+    if (type === 'checklist') return parseChecklistData(rawData);
+    return null;
+};
+
+export type ParsedChildWidget = {
+    widget: WidgetRecord;
+    parsedData: ParsedWidgetData;
+};
+
+const mapToParsedChildWidgets = (
+    rows: { widget: WidgetRecord; widgetData: { data: string } }[],
+): ParsedChildWidget[] =>
+    rows.map(({ widget, widgetData }) => ({
+        widget,
+        parsedData: parseWidgetData(widget.type, widgetData.data),
+    }));
 
 export const getCalendarChildWidgets = async (
     widgetId: string,
     userId: string,
-): Promise<ChildWidget[]> => {
+): Promise<ParsedChildWidget[]> => {
     const widget = await db.query.widgetsTable.findFirst({
         where: (table, { eq }) => eq(table.id, widgetId),
     });
@@ -24,7 +83,7 @@ export const getCalendarChildWidgets = async (
     const childTypes = ['checklist', 'spinner'] as const;
 
     if (widget.visibility === 'group' && widget.groupId) {
-        return db
+        const rows = await db
             .select({ widget: widgetsTable, widgetData: widgetDataTable })
             .from(widgetsTable)
             .innerJoin(widgetDataTable, eq(widgetsTable.dataId, widgetDataTable.id))
@@ -35,6 +94,7 @@ export const getCalendarChildWidgets = async (
                     ne(widgetsTable.id, widgetId),
                 ),
             );
+        return mapToParsedChildWidgets(rows);
     }
 
     const userWidgetIds = db
@@ -42,7 +102,7 @@ export const getCalendarChildWidgets = async (
         .from(dashboardItemsTable)
         .where(eq(dashboardItemsTable.userId, userId));
 
-    return db
+    const rows = await db
         .select({ widget: widgetsTable, widgetData: widgetDataTable })
         .from(widgetsTable)
         .innerJoin(widgetDataTable, eq(widgetsTable.dataId, widgetDataTable.id))
@@ -54,6 +114,7 @@ export const getCalendarChildWidgets = async (
                 ne(widgetsTable.id, widgetId),
             ),
         );
+    return mapToParsedChildWidgets(rows);
 };
 
 export const getAvailableGroupWidgetsForUser = async (userId: string): Promise<WidgetRecord[]> => {
