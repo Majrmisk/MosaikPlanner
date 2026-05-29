@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import Link from 'next/link';
 import { addDays, parseISO } from 'date-fns';
 import { ArrowLeft, Check, ChevronRight, Plus, Trash2, Users } from 'lucide-react';
@@ -18,7 +17,11 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { advanceSpinnerAction, updateSpinnerWidgetAction } from '@/modules/widgets/actions';
-import type { WidgetEditorProps } from './widget-editor-props';
+import {
+    spinnerEditorFormSchema,
+    type SpinnerEditorFormValues,
+} from '@/modules/widgets/schemas';
+import type { SpinnerEditorProps } from './widget-editor-props';
 
 const INTERVAL_OPTIONS = [
     { value: 'none', label: 'No interval' },
@@ -28,47 +31,30 @@ const INTERVAL_OPTIONS = [
     { value: '30', label: 'Monthly' },
 ];
 
-const spinnerFormSchema = z.object({
-    title: z.string().trim().min(1, 'Title is required').max(200),
-    items: z
-        .array(
-            z.object({ id: z.uuid(), text: z.string().trim().min(1, 'Item is required').max(200) }),
-        )
-        .min(1, 'At least one item is required'),
-    intervalDays: z.enum(['none', '1', '7', '14', '30']),
-});
-
-type SpinnerFormValues = z.infer<typeof spinnerFormSchema>;
-
-export function SpinnerEditor({ widget, widgetData, group }: WidgetEditorProps) {
+export function SpinnerEditor({ widget, parsedData, group }: SpinnerEditorProps) {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
-    let initialItems: SpinnerFormValues['items'] = [];
-    let initialIntervalDays: SpinnerFormValues['intervalDays'] = 'none';
-    let currentIndex = 0;
-    let nextSpinDate: Date | null = null;
-    try {
-        const parsed = JSON.parse(widgetData.data) as {
-            items?: string[];
-            intervalDays?: number | null;
-            currentIndex?: number;
-            lastTriggered?: string | null;
-        };
-        initialItems = (parsed.items ?? []).map((text) => ({ id: crypto.randomUUID(), text }));
-        currentIndex = parsed.currentIndex ?? 0;
-        const days = parsed.intervalDays;
+    const initialItems: SpinnerEditorFormValues['items'] = parsedData.items.map((text) => ({
+        id: crypto.randomUUID(),
+        text,
+    }));
+    const initialIntervalDays = ((): SpinnerEditorFormValues['intervalDays'] => {
+        const days = parsedData.intervalDays;
         if (days === 1 || days === 7 || days === 14 || days === 30) {
-            initialIntervalDays = String(days) as SpinnerFormValues['intervalDays'];
+            return String(days) as SpinnerEditorFormValues['intervalDays'];
         }
-        if (days && parsed.lastTriggered) {
-            nextSpinDate = addDays(parseISO(parsed.lastTriggered), days);
-        }
-    } catch {}
+        return 'none';
+    })();
+    const currentIndex = parsedData.currentIndex;
+    const nextSpinDate =
+        parsedData.intervalDays && parsedData.lastTriggered
+            ? addDays(parseISO(parsedData.lastTriggered), parsedData.intervalDays)
+            : null;
 
     const [activeIndex, setActiveIndex] = useState(currentIndex);
 
-    const form = useForm<SpinnerFormValues>({
-        resolver: zodResolver(spinnerFormSchema),
+    const form = useForm<SpinnerEditorFormValues>({
+        resolver: zodResolver(spinnerEditorFormSchema),
         defaultValues: {
             title: widget.name,
             items: initialItems,
@@ -87,7 +73,7 @@ export function SpinnerEditor({ widget, widgetData, group }: WidgetEditorProps) 
         setActiveIndex((prev) => (prev + 1) % initialItems.length);
     };
 
-    const onSubmit = async (values: SpinnerFormValues) => {
+    const onSubmit = async (values: SpinnerEditorFormValues) => {
         setSaveStatus('saving');
         try {
             await updateSpinnerWidgetAction({

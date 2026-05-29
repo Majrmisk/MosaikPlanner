@@ -1,11 +1,11 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { ChevronRight } from 'lucide-react';
 import { addDays, parseISO } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { advanceSpinnerAction } from '@/modules/widgets/actions';
-import type { WidgetPreviewProps } from '../widget-card';
+import type { SpinnerData } from '@/modules/widgets/schemas';
 
 const INTERVAL_LABELS: Record<number, string> = {
     1: 'daily',
@@ -14,41 +14,31 @@ const INTERVAL_LABELS: Record<number, string> = {
     30: 'monthly',
 };
 
-export const SpinnerPreview = ({ data, widgetId }: WidgetPreviewProps) => {
-    const [isPending, startTransition] = useTransition();
+type SpinnerPreviewProps = { parsedData: SpinnerData; widgetId: string };
 
-    let items: string[] = [];
-    let currentIndex = 0;
-    let intervalDays: number | null = null;
-    let lastTriggered: string | null = null;
-    try {
-        const parsed = JSON.parse(data) as {
-            items?: string[];
-            currentIndex?: number;
-            intervalDays?: number | null;
-            lastTriggered?: string | null;
-        };
-        items = parsed.items ?? [];
-        currentIndex = parsed.currentIndex ?? 0;
-        intervalDays = parsed.intervalDays ?? null;
-        lastTriggered = parsed.lastTriggered ?? null;
-    } catch {}
+function useAdvanceSpinnerMutation() {
+    return useMutation({
+        mutationFn: (widgetId: string) => advanceSpinnerAction({ widgetId }),
+    });
+}
 
-    const nextSpinDate =
-        intervalDays && lastTriggered ? addDays(parseISO(lastTriggered), intervalDays) : null;
+export const SpinnerPreview = ({ parsedData, widgetId }: SpinnerPreviewProps) => {
+    const mutation = useAdvanceSpinnerMutation();
+    const { items, currentIndex, intervalDays, lastTriggered } = parsedData;
 
     if (items.length === 0) {
         return <p className="text-xs text-muted-foreground">No items</p>;
     }
+
+    const nextSpinDate =
+        intervalDays && lastTriggered ? addDays(parseISO(lastTriggered), intervalDays) : null;
 
     const currentItem = items[currentIndex] ?? items[0];
     const nextItem = items[(currentIndex + 1) % items.length];
 
     const handleNext = (e: React.MouseEvent) => {
         e.stopPropagation();
-        startTransition(async () => {
-            await advanceSpinnerAction({ widgetId });
-        });
+        mutation.mutate(widgetId);
     };
 
     return (
@@ -72,11 +62,14 @@ export const SpinnerPreview = ({ data, widgetId }: WidgetPreviewProps) => {
                     )}
                 </p>
             )}
+            {mutation.isError && (
+                <p className="text-xs text-destructive">Failed to advance spinner</p>
+            )}
             <Button
                 size="sm"
                 variant="outline"
                 onClick={handleNext}
-                disabled={isPending}
+                disabled={mutation.isPending}
                 className="mt-1 gap-1"
             >
                 Next

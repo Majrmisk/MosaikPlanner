@@ -1,14 +1,11 @@
-import type { WidgetPreviewProps } from '../widget-card';
+import type { NotesData } from '@/modules/widgets/schemas';
 
-export const NotesPreview = ({ data }: WidgetPreviewProps) => {
-    let content = '';
-    try {
-        const parsed = JSON.parse(data) as { content: string };
-        content = parsed.content;
-    } catch {}
+type NotesPreviewProps = { parsedData: NotesData };
+
+export const NotesPreview = ({ parsedData }: NotesPreviewProps) => {
     return (
         <p className="h-full overflow-hidden whitespace-pre-wrap wrap-break-words text-xs text-muted-foreground">
-            {content || 'Empty note'}
+            {parsedData.content || 'Empty note'}
         </p>
     );
 };
