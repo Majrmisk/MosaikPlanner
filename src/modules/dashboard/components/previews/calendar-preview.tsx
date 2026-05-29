@@ -1,29 +1,28 @@
+'use client';
+
+import { useMemo } from 'react';
 import { CalendarDays } from 'lucide-react';
 import { addDays, isSameDay, parseISO } from 'date-fns';
-import type { WidgetPreviewProps } from '../widget-card';
-import type { CalendarManualEvent } from '@/modules/widgets/schemas';
-
-type ChecklistItem = { id: string; text: string; completed: boolean; dueDate: string | null };
-type SpinnerData = {
-    items: string[];
-    currentIndex: number;
-    intervalDays: number | null;
-    lastTriggered: string | null;
+import type { CalendarData, ChildWidget } from '@/modules/widgets/schemas';
+type CalendarPreviewProps = {
+    parsedData: CalendarData;
+    childWidgets?: ChildWidget[];
+    widgetId: string;
 };
 
 type PreviewEvent = { id: string; title: string; date: Date };
 
 const getChildEvents = (
-    childWidgets: WidgetPreviewProps['childWidgets'],
+    childWidgets: ChildWidget[] | undefined,
     excludedWidgetIds: string[],
 ): PreviewEvent[] => {
     const events: PreviewEvent[] = [];
     for (const sw of childWidgets ?? []) {
         if (excludedWidgetIds.includes(sw.id)) continue;
-        try {
-            if (sw.type === 'checklist') {
-                const data = JSON.parse(sw.data) as { items: ChecklistItem[] };
-                for (const item of data.items ?? []) {
+
+        switch (sw.parsedData?.widgetType) {
+            case 'checklist':
+                for (const item of sw.parsedData.data.items) {
                     if (item.dueDate && !item.completed) {
                         events.push({
                             id: item.id,
@@ -32,52 +31,48 @@ const getChildEvents = (
                         });
                     }
                 }
-            } else if (sw.type === 'spinner') {
-                const data = JSON.parse(sw.data) as SpinnerData;
-                if (data.intervalDays && data.items.length > 0 && data.lastTriggered) {
-                    let date = parseISO(data.lastTriggered);
-                    const idx = data.currentIndex + 1; // so we get the next one
-                    date = addDays(date, data.intervalDays);
-                    const text = data.items[idx % data.items.length];
-                    if (text) events.push({ id: `${sw.id}`, title: text, date });
+                break;
+            case 'spinner': {
+                const { items, currentIndex, intervalDays, lastTriggered } = sw.parsedData.data;
+                if (intervalDays && items.length > 0 && lastTriggered) {
+                    const date = addDays(parseISO(lastTriggered), intervalDays);
+                    const text = items[(currentIndex + 1) % items.length];
+                    if (text) events.push({ id: sw.id, title: text, date });
                 }
+                break;
             }
-        } catch {}
+        }
     }
     return events;
 };
 
-export const CalendarPreview = ({ data, childWidgets }: WidgetPreviewProps) => {
-    let manualEvents: CalendarManualEvent[] = [];
-    let excludedWidgetIds: string[] = [];
-    try {
-        const parsed = JSON.parse(data) as {
-            manualEvents?: CalendarManualEvent[];
-            excludedWidgetIds?: string[];
-        };
-        manualEvents = parsed.manualEvents ?? [];
-        excludedWidgetIds = parsed.excludedWidgetIds ?? [];
-    } catch {}
+export const CalendarPreview = ({ parsedData, childWidgets }: CalendarPreviewProps) => {
+    const today = useMemo(() => {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+        return d;
+    }, []);
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const allEvents = useMemo(() => {
+        const manualEvents = parsedData.manualEvents ?? [];
+        const excludedWidgetIds = parsedData.excludedWidgetIds ?? [];
+        const childEvents = getChildEvents(childWidgets, excludedWidgetIds);
+        const manualAsEvents: PreviewEvent[] = manualEvents.map((e) => ({
+            id: e.id,
+            title: e.title,
+            date: parseISO(e.date),
+        }));
+        return [...manualAsEvents, ...childEvents];
+    }, [childWidgets, parsedData]);
 
-    const childEvents = getChildEvents(childWidgets, excludedWidgetIds);
-    const manualAsEvents: PreviewEvent[] = manualEvents.map((e) => ({
-        id: e.id,
-        title: e.title,
-        date: parseISO(e.date),
-    }));
-
-    const allEvents = [...manualAsEvents, ...childEvents];
-
-    const todayEvents = allEvents.filter((e) => isSameDay(e.date, today));
-    const upcoming = allEvents
-        .filter((e) => e.date > today)
-        .sort((a, b) => a.date.getTime() - b.date.getTime())
-        .slice(0, todayEvents.length > 0 ? 3 : 4);
-
-    const displayed = [...todayEvents, ...upcoming].slice(0, 4);
+    const displayed = useMemo(() => {
+        const todayEvents = allEvents.filter((e) => isSameDay(e.date, today));
+        const upcoming = allEvents
+            .filter((e) => e.date > today)
+            .sort((a, b) => a.date.getTime() - b.date.getTime())
+            .slice(0, todayEvents.length > 0 ? 3 : 4);
+        return [...todayEvents, ...upcoming].slice(0, 4);
+    }, [allEvents, today]);
 
     if (displayed.length === 0) {
         return <p className="text-xs text-muted-foreground">No upcoming events</p>;
