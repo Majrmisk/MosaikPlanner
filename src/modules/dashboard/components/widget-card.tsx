@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { ComponentType } from 'react';
+import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -12,46 +12,14 @@ import type { DashboardWidget } from '@/modules/dashboard/schemas';
 import type { Group } from '@/modules/groups/schemas';
 import { removeWidgetFromDashboardAction } from '@/modules/dashboard/actions';
 import { RemoveWidgetConfirm } from './remove-widget-confirm';
-import {
-    NotesPreview,
-    CalendarPreview,
-    ChecklistPreview,
-    SpinnerPreview,
-    ExpensesPreview,
-} from './previews';
 
 type WidgetCardProps = {
     dashboardItem: DashboardWidget;
     group: Group | null;
-    childWidgets?: ChildWidgetData[];
+    renderPreview: () => ReactNode;
 };
 
-export type ChildWidgetData = {
-    id: string;
-    type: string;
-    name: string;
-    data: string;
-};
-
-export type WidgetPreviewProps = {
-    data: string;
-    childWidgets?: ChildWidgetData[];
-    widgetId: string;
-};
-
-const DefaultPreview = () => {
-    return <p className="line-clamp-3 text-xs text-muted-foreground">No preview</p>;
-};
-
-const widgetPreviews: Record<string, ComponentType<WidgetPreviewProps>> = {
-    notes: NotesPreview,
-    calendar: CalendarPreview,
-    checklist: ChecklistPreview,
-    spinner: SpinnerPreview,
-    expenses: ExpensesPreview,
-};
-
-export const WidgetCard = ({ dashboardItem, group, childWidgets }: WidgetCardProps) => {
+export const WidgetCard = ({ dashboardItem, group, renderPreview }: WidgetCardProps) => {
     const router = useRouter();
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [removing, setRemoving] = useState(false);
@@ -66,7 +34,6 @@ export const WidgetCard = ({ dashboardItem, group, childWidgets }: WidgetCardPro
     };
 
     const { widget } = dashboardItem;
-    const PreviewComponent = widgetPreviews[widget.type] ?? DefaultPreview;
     const isPrivate = widget.visibility === 'private';
 
     const handleRemove = async () => {
@@ -130,13 +97,7 @@ export const WidgetCard = ({ dashboardItem, group, childWidgets }: WidgetCardPro
                         <X className="size-3.5" />
                     </Button>
                 </CardHeader>
-                <CardContent className="flex-1 overflow-hidden">
-                    <PreviewComponent
-                        data={widget.data.data}
-                        widgetId={dashboardItem.widgetId}
-                        childWidgets={childWidgets}
-                    />
-                </CardContent>
+                <CardContent className="flex-1 overflow-hidden">{renderPreview()}</CardContent>
             </Card>
             {isPrivate && (
                 <RemoveWidgetConfirm

@@ -1,19 +1,11 @@
 'use client';
 
-import type { WidgetPreviewProps } from '../widget-card';
-import { ExpensesWidgetForm } from '@/modules/widgets/components/expenses-editor';
+import type { ExpensesData } from '@/modules/widgets/schemas';
 
-export const ExpensesPreview = ({ data }: WidgetPreviewProps) => {
-    let initExpenses: ExpensesWidgetForm['expenses'] = [];
-    try {
-        const parsed = JSON.parse(data) as { expenses: ExpensesWidgetForm['expenses'] };
-        initExpenses = parsed.expenses.map((e) => ({
-            ...e,
-            payedAt: new Date(e.payedAt),
-        }));
-    } catch {}
+type ExpensesPreviewProps = { parsedData: ExpensesData };
 
-    const latestExpenses = [...initExpenses]
+export const ExpensesPreview = ({ parsedData }: ExpensesPreviewProps) => {
+    const latestExpenses = [...parsedData.expenses]
         .sort((a, b) => b.payedAt.getTime() - a.payedAt.getTime())
         .slice(0, 10);
 

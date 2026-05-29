@@ -1,13 +1,26 @@
 import type { Widget as WidgetRecord } from '@/lib/db/schemas/widgets';
-import type { WidgetData as WidgetDataRecord } from '@/lib/db/schemas/widget-data';
-import { GroupWithMembers } from '@/modules/groups/schemas';
-import type { ChildWidget } from '@/modules/widgets/queries';
+import type { GroupWithMembers } from '@/modules/groups/schemas';
+import type { ParsedChildWidget } from '@/modules/widgets/queries';
+import type {
+    NotesData,
+    ChecklistData,
+    SpinnerData,
+    CalendarData,
+    ExpensesData,
+} from '@/modules/widgets/schemas';
 
-export type { ChildWidget };
+export type { ParsedChildWidget };
 
-export type WidgetEditorProps = {
+type BaseEditorProps = {
     widget: WidgetRecord;
-    widgetData: WidgetDataRecord;
     group: GroupWithMembers | null;
-    childWidgets?: ChildWidget[];
 };
+
+export type NotesEditorProps = BaseEditorProps & { parsedData: NotesData };
+export type ChecklistEditorProps = BaseEditorProps & { parsedData: ChecklistData };
+export type SpinnerEditorProps = BaseEditorProps & { parsedData: SpinnerData };
+export type CalendarEditorProps = BaseEditorProps & {
+    parsedData: CalendarData;
+    childWidgets: ParsedChildWidget[];
+};
+export type ExpensesEditorProps = BaseEditorProps & { parsedData: ExpensesData };
