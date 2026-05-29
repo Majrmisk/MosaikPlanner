@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import {
     DndContext,
     DragOverlay,
@@ -17,21 +18,57 @@ import { Card } from '@/components/ui/card';
 import type { DashboardWidget } from '@/modules/dashboard/schemas';
 import type { Widget as WidgetRecord } from '@/lib/db/schemas/widgets';
 import type { Group } from '@/modules/groups/schemas';
+import type { ParsedWidgetData, ChildWidget } from '@/modules/widgets/schemas';
 import { reorderWidgetsAction } from '@/modules/dashboard/actions';
 import { WidgetCard } from './widget-card';
-import type { ChildWidgetData } from './widget-card';
 import { AddWidgetDialog } from './add-widget-dialog';
+import {
+    NotesPreview,
+    CalendarPreview,
+    ChecklistPreview,
+    SpinnerPreview,
+    ExpensesPreview,
+} from './previews';
 
 type DashboardGridProps = {
     widgets: DashboardWidget[];
     availableGroupWidgets: WidgetRecord[];
     userGroups: Group[];
+    parsedDataMap: Record<string, ParsedWidgetData>;
+};
+
+const buildPreview = (
+    parsedData: ParsedWidgetData,
+    widgetId: string,
+    childWidgets?: ChildWidget[],
+): ReactNode => {
+    switch (parsedData?.widgetType) {
+        case 'notes':
+            return <NotesPreview parsedData={parsedData.data} />;
+        case 'checklist':
+            return <ChecklistPreview parsedData={parsedData.data} />;
+        case 'spinner':
+            return <SpinnerPreview parsedData={parsedData.data} widgetId={widgetId} />;
+        case 'calendar':
+            return (
+                <CalendarPreview
+                    parsedData={parsedData.data}
+                    childWidgets={childWidgets}
+                    widgetId={widgetId}
+                />
+            );
+        case 'expenses':
+            return <ExpensesPreview parsedData={parsedData.data} />;
+        default:
+            return <p className="line-clamp-3 text-xs text-muted-foreground">No preview</p>;
+    }
 };
 
 export const DashboardGrid = ({
     widgets,
     availableGroupWidgets,
     userGroups,
+    parsedDataMap,
 }: DashboardGridProps) => {
     const [addDialogOpen, setAddDialogOpen] = useState(false);
     const [items, setItems] = useState(widgets);
@@ -90,36 +127,45 @@ export const DashboardGrid = ({
             <div className="flex flex-wrap justify-center gap-4">
                 <SortableContext items={items.map((i) => i.id)} strategy={rectSortingStrategy}>
                     {items.map((item) => {
-                        let childWidgets: ChildWidgetData[] | undefined;
-                        if (item.widget.type === 'calendar') {
-                            childWidgets = items
-                                .filter((other) => {
-                                    if (other.widgetId === item.widgetId) return false;
-                                    if (!['checklist', 'spinner'].includes(other.widget.type))
-                                        return false;
-                                    if (item.widget.groupId) {
-                                        return other.widget.groupId === item.widget.groupId;
-                                    }
-                                    return other.widget.visibility === 'private';
-                                })
-                                .map((other) => ({
-                                    id: other.widgetId,
-                                    type: other.widget.type,
-                                    name: other.widget.name,
-                                    data: other.widget.data.data,
-                                }));
-                        }
+                        const parsedData = parsedDataMap[item.widgetId] ?? null;
+                        const childWidgets =
+                            item.widget.type === 'calendar'
+                                ? items
+                                      .filter((other) => {
+                                          if (other.widgetId === item.widgetId) return false;
+                                          if (
+                                              !['checklist', 'spinner'].includes(
+                                                  other.widget.type,
+                                              )
+                                          )
+                                              return false;
+                                          if (item.widget.groupId) {
+                                              return (
+                                                  other.widget.groupId === item.widget.groupId
+                                              );
+                                          }
+                                          return other.widget.visibility === 'private';
+                                      })
+                                      .map((other) => ({
+                                          id: other.widgetId,
+                                          parsedData: parsedDataMap[other.widgetId] ?? null,
+                                      }))
+                                : undefined;
+
                         return (
                             <WidgetCard
                                 key={item.id}
                                 dashboardItem={item}
                                 group={
                                     item.widget.groupId
-                                        ? (userGroups.find((g) => g.id === item.widget.groupId) ??
-                                          null)
+                                        ? (userGroups.find(
+                                              (g) => g.id === item.widget.groupId,
+                                          ) ?? null)
                                         : null
                                 }
-                                childWidgets={childWidgets}
+                                renderPreview={() =>
+                                    buildPreview(parsedData, item.widgetId, childWidgets)
+                                }
                             />
                         );
                     })}
