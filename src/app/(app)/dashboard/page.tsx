@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
-import { getUserDashboardWidgets } from '@/modules/dashboard/queries';
+import { getUserDashboardWidgets, buildParsedDataMap } from '@/modules/dashboard/queries';
 import { getAvailableGroupWidgetsForUser } from '@/modules/widgets/queries';
 import { getGroupsByUserId } from '@/modules/groups/queries';
 import { DashboardGrid } from '@/modules/dashboard/components/dashboard-grid';
@@ -25,11 +25,14 @@ const DashboardPage = async () => {
         getGroupsByUserId(session.user.id),
     ]);
 
+    const parsedDataMap = buildParsedDataMap(widgets);
+
     return (
         <DashboardGrid
             widgets={widgets}
             availableGroupWidgets={availableGroupWidgets}
             userGroups={userGroups}
+            parsedDataMap={parsedDataMap}
         />
     );
 };
