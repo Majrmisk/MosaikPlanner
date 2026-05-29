@@ -1,7 +1,11 @@
 'use client';
 
-import { z } from 'zod';
-import { WidgetEditorProps } from '@/modules/widgets/components/widget-editor-props';
+import type { ExpensesEditorProps } from '@/modules/widgets/components/widget-editor-props';
+import {
+    expensesWidgetFormSchema,
+    type Expense,
+    type ExpensesWidgetForm,
+} from '@/modules/widgets/schemas';
 import { useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -29,31 +33,9 @@ import { ExpensesDebts } from '@/modules/widgets/components/expenses-debts';
 import { ExpensesFilter, ExpensesFilterValues } from '@/modules/widgets/components/expenses-filter';
 import { Separator } from '@/components/ui/separator';
 
-export const CreateExpenseFormSchema = z
-    .object({
-        id: z.string(),
-        name: z.string().trim().min(1, 'Expense title is required').max(200),
-        price: z.number().positive('Price must be > 0'),
-        payedBy: z.uuidv4(),
-        payedFor: z.array(z.uuidv4()).min(1, 'At least one person must be selected'),
-        payedAt: z.date(),
-        isReimbursement: z.boolean(),
-    })
-    .refine((data) => !data.isReimbursement || data.payedFor.length === 1, {
-        message: 'Only one person can be reimbursed at a time',
-        path: ['payedFor'],
-    });
+export type { Expense, ExpensesWidgetForm };
 
-export type Expense = z.infer<typeof CreateExpenseFormSchema>;
-
-export const ExpensesWidgetFormSchema = z.object({
-    title: z.string().trim().min(1, 'Title is required').max(200),
-    expenses: z.array(CreateExpenseFormSchema),
-});
-
-export type ExpensesWidgetForm = z.infer<typeof ExpensesWidgetFormSchema>;
-
-export const ExpensesEditor = ({ widget, widgetData, group }: WidgetEditorProps) => {
+export const ExpensesEditor = ({ widget, parsedData, group }: ExpensesEditorProps) => {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
     const [createExpenseOpen, setCreateExpenseOpen] = useState<boolean>(false);
     const [payDebtTo, setPayDebtTo] = useState<string[] | undefined>(undefined);
@@ -68,17 +50,10 @@ export const ExpensesEditor = ({ widget, widgetData, group }: WidgetEditorProps)
     });
     const currentUser = useSession().data?.user;
 
-    let initExpenses: ExpensesWidgetForm['expenses'] = [];
-    try {
-        const parsed = JSON.parse(widgetData.data) as { expenses: ExpensesWidgetForm['expenses'] };
-        initExpenses = parsed.expenses.map((e) => ({
-            ...e,
-            payedAt: new Date(e.payedAt), // they are loaded as strings, fail zod validation otherwise
-        }));
-    } catch {}
+    const initExpenses: ExpensesWidgetForm['expenses'] = parsedData.expenses;
 
     const form = useForm<ExpensesWidgetForm>({
-        resolver: zodResolver(ExpensesWidgetFormSchema),
+        resolver: zodResolver(expensesWidgetFormSchema),
         defaultValues: {
             title: widget.name,
             expenses: initExpenses,

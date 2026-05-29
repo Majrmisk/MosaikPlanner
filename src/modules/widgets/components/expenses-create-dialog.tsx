@@ -1,4 +1,4 @@
-import { CreateExpenseFormSchema, Expense } from '@/modules/widgets/components/expenses-editor';
+import { createExpenseFormSchema, type Expense } from '@/modules/widgets/schemas';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -42,7 +42,7 @@ export const CreateExpenseDialog = ({
     }
 
     const form = useForm<Expense>({
-        resolver: zodResolver(CreateExpenseFormSchema),
+        resolver: zodResolver(createExpenseFormSchema),
         defaultValues: {
             id: crypto.randomUUID(),
             name: isValidReimbursement ? 'Reimbursement for ' + ReimburseToName : 'New expense',

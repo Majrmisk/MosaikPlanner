@@ -3,40 +3,29 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import Link from 'next/link';
 import { ArrowLeft, Check } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { updateNoteWidgetAction } from '@/modules/widgets/actions';
-import type { WidgetEditorProps } from './widget-editor-props';
+import { noteEditorFormSchema, type NoteEditorFormValues } from '@/modules/widgets/schemas';
+import type { NotesEditorProps } from './widget-editor-props';
 
-const noteFormSchema = z.object({
-    title: z.string().trim().min(1, 'Title is required').max(200),
-    content: z.string(),
-});
-
-type NoteFormValues = z.infer<typeof noteFormSchema>;
-
-export const NotesEditor = ({ widget, widgetData, group }: WidgetEditorProps) => {
+export const NotesEditor = ({ widget, parsedData, group }: NotesEditorProps) => {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
-    let initialContent = '';
-    try {
-        const parsed = JSON.parse(widgetData.data) as { content: string };
-        initialContent = parsed.content;
-    } catch {}
+    const initialContent = parsedData.content;
 
-    const form = useForm<NoteFormValues>({
-        resolver: zodResolver(noteFormSchema),
+    const form = useForm<NoteEditorFormValues>({
+        resolver: zodResolver(noteEditorFormSchema),
         defaultValues: {
             title: widget.name,
             content: initialContent,
         },
     });
 
-    const onSubmit = async (values: NoteFormValues) => {
+    const onSubmit = async (values: NoteEditorFormValues) => {
         setSaveStatus('saving');
         try {
             await updateNoteWidgetAction({

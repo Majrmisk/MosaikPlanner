@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import Link from 'next/link';
 import { ArrowLeft, CalendarDays, Check, Plus, Trash2, X } from 'lucide-react';
 import { format } from 'date-fns';
@@ -12,34 +11,20 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { updateChecklistWidgetAction } from '@/modules/widgets/actions';
-import type { WidgetEditorProps } from './widget-editor-props';
+import {
+    checklistEditorFormSchema,
+    type ChecklistEditorFormValues,
+} from '@/modules/widgets/schemas';
+import type { ChecklistEditorProps } from './widget-editor-props';
 
-const checklistFormSchema = z.object({
-    title: z.string().trim().min(1, 'Title is required').max(200),
-    items: z.array(
-        z.object({
-            id: z.uuid(),
-            text: z.string().trim().min(1, 'Item text is required').max(500),
-            completed: z.boolean(),
-            dueDate: z.iso.date().nullable(),
-        }),
-    ),
-});
-
-type ChecklistFormValues = z.infer<typeof checklistFormSchema>;
-
-export function ChecklistEditor({ widget, widgetData, group }: WidgetEditorProps) {
+export function ChecklistEditor({ widget, parsedData, group }: ChecklistEditorProps) {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
     const [openPopover, setOpenPopover] = useState<number | null>(null);
 
-    let initialItems: ChecklistFormValues['items'] = [];
-    try {
-        const parsed = JSON.parse(widgetData.data) as { items: ChecklistFormValues['items'] };
-        initialItems = parsed.items ?? [];
-    } catch {}
+    const initialItems: ChecklistEditorFormValues['items'] = parsedData.items;
 
-    const form = useForm<ChecklistFormValues>({
-        resolver: zodResolver(checklistFormSchema),
+    const form = useForm<ChecklistEditorFormValues>({
+        resolver: zodResolver(checklistEditorFormSchema),
         defaultValues: {
             title: widget.name,
             items: initialItems,
@@ -51,7 +36,7 @@ export function ChecklistEditor({ widget, widgetData, group }: WidgetEditorProps
         name: 'items',
     });
 
-    const onSubmit = async (values: ChecklistFormValues) => {
+    const onSubmit = async (values: ChecklistEditorFormValues) => {
         setSaveStatus('saving');
         try {
             await updateChecklistWidgetAction({
