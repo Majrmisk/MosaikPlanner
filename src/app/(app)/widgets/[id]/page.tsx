@@ -6,8 +6,13 @@ import { auth } from '@/auth';
 import { getWidgetById, getWidgetDataById } from '@/modules/widgets/repository';
 import { getDashboardItemByUserIdAndWidgetId } from '@/modules/dashboard/repository';
 import { getGroupWithMembersById, getIsUserInGroup } from '@/modules/groups/queries';
-import { getCalendarChildWidgets } from '@/modules/widgets/queries';
-import { widgetEditors } from '@/modules/widgets/components/widget-editors';
+import { getCalendarChildWidgets, parseWidgetData } from '@/modules/widgets/queries';
+import { NotesEditor } from '@/modules/widgets/components/notes-editor';
+import { ChecklistEditor } from '@/modules/widgets/components/checklist-editor';
+import { SpinnerEditor } from '@/modules/widgets/components/spinner-editor';
+import { CalendarEditor } from '@/modules/widgets/components/calendar-editor';
+import { ExpensesEditor } from '@/modules/widgets/components/expenses-editor';
+
 type WidgetPageProps = {
     params: Promise<{ id: string }>;
 };
@@ -56,21 +61,28 @@ export default async function WidgetPage({ params }: WidgetPageProps) {
         notFound();
     }
 
-    const Editor = widgetEditors[widget.type];
+    const parsedData = parseWidgetData(widget.type, widgetData.data);
 
-    if (Editor) {
-        const childWidgets =
-            widget.type === 'calendar'
-                ? await getCalendarChildWidgets(widget.id, session.user.id)
-                : undefined;
-        return (
-            <Editor
-                widget={widget}
-                widgetData={widgetData}
-                group={group}
-                childWidgets={childWidgets}
-            />
-        );
+    switch (parsedData?.widgetType) {
+        case 'notes':
+            return <NotesEditor widget={widget} parsedData={parsedData.data} group={group} />;
+        case 'checklist':
+            return <ChecklistEditor widget={widget} parsedData={parsedData.data} group={group} />;
+        case 'spinner':
+            return <SpinnerEditor widget={widget} parsedData={parsedData.data} group={group} />;
+        case 'calendar': {
+            const childWidgets = await getCalendarChildWidgets(widget.id, session.user.id);
+            return (
+                <CalendarEditor
+                    widget={widget}
+                    parsedData={parsedData.data}
+                    group={group}
+                    childWidgets={childWidgets}
+                />
+            );
+        }
+        case 'expenses':
+            return <ExpensesEditor widget={widget} parsedData={parsedData.data} group={group} />;
     }
 
     return (
