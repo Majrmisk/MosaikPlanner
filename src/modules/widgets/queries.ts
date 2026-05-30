@@ -49,12 +49,20 @@ export const parseChecklistData = (rawData: string): ParsedWidgetData => {
 };
 
 export const parseWidgetData = (type: string, rawData: string): ParsedWidgetData => {
-    if (type === 'notes') return parseNotesData(rawData);
-    if (type === 'expenses') return parseExpensesData(rawData);
-    if (type === 'spinner') return parseSpinnerData(rawData);
-    if (type === 'calendar') return parseCalendarData(rawData);
-    if (type === 'checklist') return parseChecklistData(rawData);
-    return null;
+    switch (type) {
+        case 'notes':
+            return parseNotesData(rawData);
+        case 'expenses':
+            return parseExpensesData(rawData);
+        case 'spinner':
+            return parseSpinnerData(rawData);
+        case 'calendar':
+            return parseCalendarData(rawData);
+        case 'checklist':
+            return parseChecklistData(rawData);
+        default:
+            return null;
+    }
 };
 
 export type ParsedChildWidget = {
