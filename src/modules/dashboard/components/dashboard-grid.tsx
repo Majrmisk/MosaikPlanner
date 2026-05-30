@@ -133,16 +133,10 @@ export const DashboardGrid = ({
                                 ? items
                                       .filter((other) => {
                                           if (other.widgetId === item.widgetId) return false;
-                                          if (
-                                              !['checklist', 'spinner'].includes(
-                                                  other.widget.type,
-                                              )
-                                          )
+                                          if (!['checklist', 'spinner'].includes(other.widget.type))
                                               return false;
                                           if (item.widget.groupId) {
-                                              return (
-                                                  other.widget.groupId === item.widget.groupId
-                                              );
+                                              return other.widget.groupId === item.widget.groupId;
                                           }
                                           return other.widget.visibility === 'private';
                                       })
@@ -158,9 +152,8 @@ export const DashboardGrid = ({
                                 dashboardItem={item}
                                 group={
                                     item.widget.groupId
-                                        ? (userGroups.find(
-                                              (g) => g.id === item.widget.groupId,
-                                          ) ?? null)
+                                        ? (userGroups.find((g) => g.id === item.widget.groupId) ??
+                                          null)
                                         : null
                                 }
                                 renderPreview={() =>
