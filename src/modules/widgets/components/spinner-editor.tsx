@@ -17,10 +17,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { advanceSpinnerAction, updateSpinnerWidgetAction } from '@/modules/widgets/actions';
-import {
-    spinnerEditorFormSchema,
-    type SpinnerEditorFormValues,
-} from '@/modules/widgets/schemas';
+import { spinnerEditorFormSchema, type SpinnerEditorFormValues } from '@/modules/widgets/schemas';
 import type { SpinnerEditorProps } from './widget-editor-props';
 
 const INTERVAL_OPTIONS = [

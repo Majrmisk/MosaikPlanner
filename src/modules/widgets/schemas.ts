@@ -182,7 +182,9 @@ export const spinnerDataSchema = z.object({
 export const spinnerEditorFormSchema = z.object({
     title: z.string().trim().min(1, 'Title is required').max(200),
     items: z
-        .array(z.object({ id: z.uuid(), text: z.string().trim().min(1, 'Item is required').max(200) }))
+        .array(
+            z.object({ id: z.uuid(), text: z.string().trim().min(1, 'Item is required').max(200) }),
+        )
         .min(1, 'At least one item is required'),
     intervalDays: z.enum(['none', '1', '7', '14', '30']),
 });
@@ -201,9 +203,7 @@ export type SpinnerEditorFormValues = z.infer<typeof spinnerEditorFormSchema>;
 export type CalendarEditorFormValues = z.infer<typeof calendarEditorFormSchema>;
 export type SpinnerData = z.infer<typeof spinnerDataSchema>;
 
-
 // Expenses schemas
-
 
 export const createExpenseFormSchema = z
     .object({
