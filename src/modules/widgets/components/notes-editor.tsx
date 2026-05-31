@@ -4,18 +4,16 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import {updateChecklistWidgetAction, updateNoteWidgetAction} from '@/modules/widgets/actions';
-import {
-    type ChecklistEditorFormValues,
-    noteEditorFormSchema,
-    type NoteEditorFormValues
-} from '@/modules/widgets/schemas';
+import { updateNoteWidgetAction } from '@/modules/widgets/actions';
+import { noteEditorFormSchema, type NoteEditorFormValues } from '@/modules/widgets/schemas';
 import type { NotesEditorProps } from './widget-editor-props';
-import {SaveWidgetButton, useWidgetSaveMutation} from "@/modules/widgets/components/saving-button";
+import {
+    SaveWidgetButton,
+    useWidgetSaveMutation,
+} from '@/modules/widgets/components/saving-button';
 
 export const NotesEditor = ({ widget, parsedData, group }: NotesEditorProps) => {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
@@ -31,11 +29,12 @@ export const NotesEditor = ({ widget, parsedData, group }: NotesEditorProps) => 
     });
 
     const updateNotesMutation = useWidgetSaveMutation({
-        mutationFn: async (values: NoteEditorFormValues) => await updateNoteWidgetAction({
-            widgetId: widget.id,
-            title: values.title,
-            content: values.content,
-        }),
+        mutationFn: async (values: NoteEditorFormValues) =>
+            await updateNoteWidgetAction({
+                widgetId: widget.id,
+                title: values.title,
+                content: values.content,
+            }),
         setSaveStatus: setSaveStatus,
     });
 

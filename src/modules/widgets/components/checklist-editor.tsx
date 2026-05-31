@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
-import { ArrowLeft, CalendarDays, Check, Plus, Trash2, X } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Plus, Trash2, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -16,8 +16,10 @@ import {
     type ChecklistEditorFormValues,
 } from '@/modules/widgets/schemas';
 import type { ChecklistEditorProps } from './widget-editor-props';
-import {useMutation} from "@tanstack/react-query";
-import {SaveWidgetButton, useWidgetSaveMutation} from "@/modules/widgets/components/saving-button";
+import {
+    SaveWidgetButton,
+    useWidgetSaveMutation,
+} from '@/modules/widgets/components/saving-button';
 
 export function ChecklistEditor({ widget, parsedData, group }: ChecklistEditorProps) {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
@@ -39,11 +41,12 @@ export function ChecklistEditor({ widget, parsedData, group }: ChecklistEditorPr
     });
 
     const updateChecklistMutation = useWidgetSaveMutation({
-        mutationFn: async (values: ChecklistEditorFormValues) => await updateChecklistWidgetAction({
-            widgetId: widget.id,
-            title: values.title,
-            items: values.items,
-        }),
+        mutationFn: async (values: ChecklistEditorFormValues) =>
+            await updateChecklistWidgetAction({
+                widgetId: widget.id,
+                title: values.title,
+                items: values.items,
+            }),
         setSaveStatus: setSaveStatus,
     });
 

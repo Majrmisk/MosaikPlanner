@@ -19,7 +19,7 @@ import {
 import { leaveGroupAction } from '@/modules/groups/actions';
 import type { GroupWithMembers } from '@/modules/groups/schemas';
 import { GroupFormDialog } from './group-form-dialog';
-import {useMutation} from "@tanstack/react-query";
+import { useMutation } from '@tanstack/react-query';
 
 type GroupCardProps = {
     group: GroupWithMembers;
@@ -29,9 +29,8 @@ type GroupCardProps = {
 export function GroupCard({ group, currentUserId }: GroupCardProps) {
     const [editOpen, setEditOpen] = useState(false);
 
-
     const leaveGroupMutation = useMutation({
-        mutationFn: () => leaveGroupAction({groupId: group.id}),
+        mutationFn: () => leaveGroupAction({ groupId: group.id }),
     });
 
     const handleLeave = async () => {
