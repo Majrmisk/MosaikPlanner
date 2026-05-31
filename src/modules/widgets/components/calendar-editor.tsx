@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { addDays, format, isSameDay, parseISO } from 'date-fns';
-import { ArrowLeft, Check, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import type { DayButton } from 'react-day-picker';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,10 @@ import {
     type CalendarManualEvent,
 } from '@/modules/widgets/schemas';
 import type { CalendarEditorProps } from './widget-editor-props';
-import {SaveWidgetButton, useWidgetSaveMutation} from "@/modules/widgets/components/saving-button";
+import {
+    SaveWidgetButton,
+    useWidgetSaveMutation,
+} from '@/modules/widgets/components/saving-button';
 
 type CalendarEvent = {
     id: string;
@@ -199,19 +202,19 @@ export function CalendarEditor({ widget, parsedData, childWidgets, group }: Cale
     };
 
     const updateCalendarMutation = useWidgetSaveMutation({
-        mutationFn: async (values: CalendarEditorFormValues) => await updateCalendarWidgetAction({
-            widgetId: widget.id,
-            title: values.title,
-            excludedWidgetIds: values.excludedWidgetIds,
-            manualEvents: values.manualEvents,
-            widgetColors,
-        }),
+        mutationFn: async (values: CalendarEditorFormValues) =>
+            await updateCalendarWidgetAction({
+                widgetId: widget.id,
+                title: values.title,
+                excludedWidgetIds: values.excludedWidgetIds,
+                manualEvents: values.manualEvents,
+                widgetColors,
+            }),
         setSaveStatus: setSaveStatus,
-    })
+    });
 
     const onSubmit = async (values: CalendarEditorFormValues) =>
         await updateCalendarMutation.mutateAsync(values);
-
 
     return (
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">

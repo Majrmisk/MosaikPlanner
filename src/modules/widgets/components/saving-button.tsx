@@ -1,8 +1,8 @@
 'use client';
 
 import { useMutation } from '@tanstack/react-query';
-import {Button} from "@/components/ui/button";
-import {Check} from "lucide-react";
+import { Button } from '@/components/ui/button';
+import { Check } from 'lucide-react';
 
 type SaveStatus = 'idle' | 'saving' | 'saved';
 
@@ -16,7 +16,10 @@ type SaveWidgetButtonProps = {
     onClickAction: () => void;
 };
 
-export function useWidgetSaveMutation<T>({mutationFn, setSaveStatus}: UseWidgetSaveMutationParams<T>) {
+export function useWidgetSaveMutation<T>({
+    mutationFn,
+    setSaveStatus,
+}: UseWidgetSaveMutationParams<T>) {
     return useMutation({
         mutationFn,
         onMutate: () => setSaveStatus('saving'),
@@ -28,20 +31,16 @@ export function useWidgetSaveMutation<T>({mutationFn, setSaveStatus}: UseWidgetS
     });
 }
 
-export function SaveWidgetButton({saveStatus, onClickAction}: SaveWidgetButtonProps) {
+export function SaveWidgetButton({ saveStatus, onClickAction }: SaveWidgetButtonProps) {
     return (
         <>
             {saveStatus === 'saved' && (
                 <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Check className="size-3" />
-                            Saved
-                        </span>
+                    <Check className="size-3" />
+                    Saved
+                </span>
             )}
-            <Button
-                onClick={onClickAction}
-                disabled={saveStatus === 'saving'}
-                size="sm"
-            >
+            <Button onClick={onClickAction} disabled={saveStatus === 'saving'} size="sm">
                 {saveStatus === 'saving' ? 'Saving...' : 'Save'}
             </Button>
         </>
