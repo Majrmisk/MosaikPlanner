@@ -4,7 +4,7 @@ import type { ExpensesEditorProps } from '@/modules/widgets/components/widget-ed
 import {
     expensesWidgetFormSchema,
     type Expense,
-    type ExpensesWidgetForm,
+    type ExpensesWidgetForm, type ChecklistEditorFormValues,
 } from '@/modules/widgets/schemas';
 import { useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useSession } from 'next-auth/react';
 import { userSchema } from '@/modules/users/schemas';
-import { updateExpensesWidgetAction } from '@/modules/widgets/actions';
+import {updateChecklistWidgetAction, updateExpensesWidgetAction} from '@/modules/widgets/actions';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -32,6 +32,7 @@ import { ExpensesChart } from '@/modules/widgets/components/expenses-chart';
 import { ExpensesDebts } from '@/modules/widgets/components/expenses-debts';
 import { ExpensesFilter, ExpensesFilterValues } from '@/modules/widgets/components/expenses-filter';
 import { Separator } from '@/components/ui/separator';
+import {useWidgetSaveMutation} from "@/modules/widgets/components/saving-button";
 
 export type { Expense, ExpensesWidgetForm };
 
@@ -89,20 +90,17 @@ export const ExpensesEditor = ({ widget, parsedData, group }: ExpensesEditorProp
         setCreateExpenseOpen(true);
     };
 
-    const onSubmit = async (values: ExpensesWidgetForm) => {
-        setSaveStatus('saving');
-        try {
-            await updateExpensesWidgetAction({
-                widgetId: widget.id,
-                title: values.title,
-                expenses: values.expenses,
-            });
-            setSaveStatus('saved');
-            setTimeout(() => setSaveStatus('idle'), 2000);
-        } catch {
-            setSaveStatus('idle');
-        }
-    };
+    const updateExpensesMutation = useWidgetSaveMutation({
+        mutationFn: async (values: ExpensesWidgetForm) => await updateExpensesWidgetAction({
+            widgetId: widget.id,
+            title: values.title,
+            expenses: values.expenses,
+        }),
+        setSaveStatus: setSaveStatus,
+    });
+
+    const onSubmit = async (values: ExpensesWidgetForm) =>
+        await updateExpensesMutation.mutateAsync(values);
 
     const addExpense = (expense: Expense) => {
         append(expense);

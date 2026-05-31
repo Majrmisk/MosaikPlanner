@@ -19,6 +19,7 @@ import {
 import { leaveGroupAction } from '@/modules/groups/actions';
 import type { GroupWithMembers } from '@/modules/groups/schemas';
 import { GroupFormDialog } from './group-form-dialog';
+import {useMutation} from "@tanstack/react-query";
 
 type GroupCardProps = {
     group: GroupWithMembers;
@@ -26,16 +27,15 @@ type GroupCardProps = {
 };
 
 export function GroupCard({ group, currentUserId }: GroupCardProps) {
-    const [leaving, setLeaving] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
 
+
+    const leaveGroupMutation = useMutation({
+        mutationFn: () => leaveGroupAction({groupId: group.id}),
+    });
+
     const handleLeave = async () => {
-        setLeaving(true);
-        try {
-            await leaveGroupAction({ groupId: group.id });
-        } finally {
-            setLeaving(false);
-        }
+        await leaveGroupMutation.mutateAsync();
     };
 
     const isLastMember = group.members.length === 1;
@@ -66,9 +66,9 @@ export function GroupCard({ group, currentUserId }: GroupCardProps) {
                                     variant="ghost"
                                     size="icon"
                                     className="size-7 shrink-0 text-muted-foreground hover:text-destructive"
-                                    disabled={leaving}
+                                    disabled={leaveGroupMutation.isPending}
                                 >
-                                    {leaving ? (
+                                    {leaveGroupMutation.isPending ? (
                                         <Loader2 className="size-3.5 animate-spin" />
                                     ) : (
                                         <LogOut className="size-3.5" />

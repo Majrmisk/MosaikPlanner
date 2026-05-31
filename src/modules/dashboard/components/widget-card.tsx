@@ -12,6 +12,7 @@ import type { DashboardWidget } from '@/modules/dashboard/schemas';
 import type { Group } from '@/modules/groups/schemas';
 import { removeWidgetFromDashboardAction } from '@/modules/dashboard/actions';
 import { RemoveWidgetConfirm } from './remove-widget-confirm';
+import { useMutation } from '@tanstack/react-query';
 
 type WidgetCardProps = {
     dashboardItem: DashboardWidget;
@@ -22,7 +23,6 @@ type WidgetCardProps = {
 export const WidgetCard = ({ dashboardItem, group, renderPreview }: WidgetCardProps) => {
     const router = useRouter();
     const [confirmOpen, setConfirmOpen] = useState(false);
-    const [removing, setRemoving] = useState(false);
 
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
         id: dashboardItem.id,
@@ -36,14 +36,15 @@ export const WidgetCard = ({ dashboardItem, group, renderPreview }: WidgetCardPr
     const { widget } = dashboardItem;
     const isPrivate = widget.visibility === 'private';
 
-    const handleRemove = async () => {
-        setRemoving(true);
-        try {
-            await removeWidgetFromDashboardAction(dashboardItem.id);
-        } finally {
-            setRemoving(false);
+    const removeWidgetMutation = useMutation({
+        mutationFn: () => removeWidgetFromDashboardAction(dashboardItem.id),
+        onSettled: () => {
             setConfirmOpen(false);
-        }
+        },
+    });
+
+    const handleRemove = async () => {
+        await removeWidgetMutation.mutateAsync();
     };
 
     const handleRemoveClick = (e: React.MouseEvent) => {
@@ -92,7 +93,7 @@ export const WidgetCard = ({ dashboardItem, group, renderPreview }: WidgetCardPr
                         size="icon-xs"
                         className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
                         onClick={handleRemoveClick}
-                        disabled={removing}
+                        disabled={removeWidgetMutation.isPending}
                     >
                         <X className="size-3.5" />
                     </Button>
@@ -105,7 +106,7 @@ export const WidgetCard = ({ dashboardItem, group, renderPreview }: WidgetCardPr
                     onOpenChange={setConfirmOpen}
                     widgetName={widget.name}
                     onConfirm={handleRemove}
-                    loading={removing}
+                    loading={removeWidgetMutation.isPending}
                 />
             )}
         </>
