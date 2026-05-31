@@ -16,6 +16,8 @@ import {
     type ChecklistEditorFormValues,
 } from '@/modules/widgets/schemas';
 import type { ChecklistEditorProps } from './widget-editor-props';
+import {useMutation} from "@tanstack/react-query";
+import {SaveWidgetButton, useWidgetSaveMutation} from "@/modules/widgets/components/saving-button";
 
 export function ChecklistEditor({ widget, parsedData, group }: ChecklistEditorProps) {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
@@ -36,20 +38,17 @@ export function ChecklistEditor({ widget, parsedData, group }: ChecklistEditorPr
         name: 'items',
     });
 
-    const onSubmit = async (values: ChecklistEditorFormValues) => {
-        setSaveStatus('saving');
-        try {
-            await updateChecklistWidgetAction({
-                widgetId: widget.id,
-                title: values.title,
-                items: values.items,
-            });
-            setSaveStatus('saved');
-            setTimeout(() => setSaveStatus('idle'), 2000);
-        } catch {
-            setSaveStatus('idle');
-        }
-    };
+    const updateChecklistMutation = useWidgetSaveMutation({
+        mutationFn: async (values: ChecklistEditorFormValues) => await updateChecklistWidgetAction({
+            widgetId: widget.id,
+            title: values.title,
+            items: values.items,
+        }),
+        setSaveStatus: setSaveStatus,
+    });
+
+    const onSubmit = async (values: ChecklistEditorFormValues) =>
+        await updateChecklistMutation.mutateAsync(values);
 
     const addItem = () => {
         append({ id: crypto.randomUUID(), text: '', completed: false, dueDate: null });
@@ -84,19 +83,10 @@ export function ChecklistEditor({ widget, parsedData, group }: ChecklistEditorPr
                             {group.name}
                         </span>
                     )}
-                    {saveStatus === 'saved' && (
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Check className="size-3" />
-                            Saved
-                        </span>
-                    )}
-                    <Button
-                        onClick={form.handleSubmit(onSubmit)}
-                        disabled={saveStatus === 'saving'}
-                        size="sm"
-                    >
-                        {saveStatus === 'saving' ? 'Saving...' : 'Save'}
-                    </Button>
+                    <SaveWidgetButton
+                        saveStatus={saveStatus}
+                        onClickAction={form.handleSubmit(onSubmit)}
+                    />
                 </div>
             </div>
 

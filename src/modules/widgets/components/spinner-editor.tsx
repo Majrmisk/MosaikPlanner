@@ -16,9 +16,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { advanceSpinnerAction, updateSpinnerWidgetAction } from '@/modules/widgets/actions';
-import { spinnerEditorFormSchema, type SpinnerEditorFormValues } from '@/modules/widgets/schemas';
+import {advanceSpinnerAction, updateChecklistWidgetAction, updateSpinnerWidgetAction} from '@/modules/widgets/actions';
+import {
+    type ChecklistEditorFormValues,
+    spinnerEditorFormSchema,
+    type SpinnerEditorFormValues
+} from '@/modules/widgets/schemas';
 import type { SpinnerEditorProps } from './widget-editor-props';
+import {useWidgetSaveMutation} from "@/modules/widgets/components/saving-button";
 
 const INTERVAL_OPTIONS = [
     { value: 'none', label: 'No interval' },
@@ -70,22 +75,19 @@ export function SpinnerEditor({ widget, parsedData, group }: SpinnerEditorProps)
         setActiveIndex((prev) => (prev + 1) % initialItems.length);
     };
 
-    const onSubmit = async (values: SpinnerEditorFormValues) => {
-        setSaveStatus('saving');
-        try {
-            await updateSpinnerWidgetAction({
-                widgetId: widget.id,
-                title: values.title,
-                items: values.items.map((i) => i.text),
-                intervalDays: values.intervalDays === 'none' ? null : Number(values.intervalDays),
-                lastTriggered: null,
-            });
-            setSaveStatus('saved');
-            setTimeout(() => setSaveStatus('idle'), 2000);
-        } catch {
-            setSaveStatus('idle');
-        }
-    };
+    const updateSpinnerMutation = useWidgetSaveMutation({
+        mutationFn: async (values: SpinnerEditorFormValues) => await updateSpinnerWidgetAction({
+            widgetId: widget.id,
+            title: values.title,
+            items: values.items.map((i) => i.text),
+            intervalDays: values.intervalDays === 'none' ? null : Number(values.intervalDays),
+            lastTriggered: null,
+        }),
+        setSaveStatus: setSaveStatus,
+    });
+
+    const onSubmit = async (values: SpinnerEditorFormValues) =>
+        await updateSpinnerMutation.mutateAsync(values);
 
     return (
         <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
