@@ -32,7 +32,7 @@ import { ExpensesChart } from '@/modules/widgets/components/expenses-chart';
 import { ExpensesDebts } from '@/modules/widgets/components/expenses-debts';
 import { ExpensesFilter, ExpensesFilterValues } from '@/modules/widgets/components/expenses-filter';
 import { Separator } from '@/components/ui/separator';
-import {useWidgetSaveMutation} from "@/modules/widgets/components/saving-button";
+import {SaveWidgetButton, useWidgetSaveMutation} from "@/modules/widgets/components/saving-button";
 
 export type { Expense, ExpensesWidgetForm };
 
@@ -131,19 +131,10 @@ export const ExpensesEditor = ({ widget, parsedData, group }: ExpensesEditorProp
                             {group.name}
                         </span>
                     )}
-                    {saveStatus === 'saved' && (
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Check className="size-3" />
-                            Saved
-                        </span>
-                    )}
-                    <Button
-                        onClick={form.handleSubmit(onSubmit)}
-                        disabled={saveStatus === 'saving'}
-                        size="sm"
-                    >
-                        {saveStatus === 'saving' ? 'Saving...' : 'Save'}
-                    </Button>
+                    <SaveWidgetButton
+                        saveStatus={saveStatus}
+                        onClickAction={form.handleSubmit(onSubmit)}
+                    />
                 </div>
             </div>
 
