@@ -98,6 +98,9 @@ export function GroupCard({ group, currentUserId }: GroupCardProps) {
                         </AlertDialog>
                     </div>
                 </CardHeader>
+                {leaveGroupMutation.isError && (
+                    <p className="px-6 pb-2 text-xs text-destructive">Failed to leave group</p>
+                )}
                 <CardContent className="pt-0">
                     <div className="flex flex-wrap gap-1.5">
                         {group.members.map((member) => (
