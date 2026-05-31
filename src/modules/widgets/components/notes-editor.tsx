@@ -15,7 +15,7 @@ import {
     type NoteEditorFormValues
 } from '@/modules/widgets/schemas';
 import type { NotesEditorProps } from './widget-editor-props';
-import {useWidgetSaveMutation} from "@/modules/widgets/components/saving-button";
+import {SaveWidgetButton, useWidgetSaveMutation} from "@/modules/widgets/components/saving-button";
 
 export const NotesEditor = ({ widget, parsedData, group }: NotesEditorProps) => {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
@@ -65,19 +65,10 @@ export const NotesEditor = ({ widget, parsedData, group }: NotesEditorProps) => 
                             {group.name}
                         </span>
                     )}
-                    {saveStatus === 'saved' && (
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Check className="size-3" />
-                            Saved
-                        </span>
-                    )}
-                    <Button
-                        onClick={form.handleSubmit(onSubmit)}
-                        disabled={saveStatus === 'saving'}
-                        size="sm"
-                    >
-                        {saveStatus === 'saving' ? 'Saving...' : 'Save'}
-                    </Button>
+                    <SaveWidgetButton
+                        saveStatus={saveStatus}
+                        onClickAction={form.handleSubmit(onSubmit)}
+                    />
                 </div>
             </div>
 
