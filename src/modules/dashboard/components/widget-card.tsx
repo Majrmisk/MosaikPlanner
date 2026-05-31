@@ -99,6 +99,11 @@ export const WidgetCard = ({ dashboardItem, group, renderPreview }: WidgetCardPr
                     </Button>
                 </CardHeader>
                 <CardContent className="flex-1 overflow-hidden">{renderPreview()}</CardContent>
+                {removeWidgetMutation.isError && (
+                    <p className="absolute bottom-2 left-2 right-2 text-center text-xs text-destructive">
+                        Failed to remove widget
+                    </p>
+                )}
             </Card>
             {isPrivate && (
                 <RemoveWidgetConfirm
