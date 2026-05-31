@@ -19,7 +19,7 @@ import {
     type CalendarManualEvent,
 } from '@/modules/widgets/schemas';
 import type { CalendarEditorProps } from './widget-editor-props';
-import {useWidgetSaveMutation} from "@/modules/widgets/components/saving-button";
+import {SaveWidgetButton, useWidgetSaveMutation} from "@/modules/widgets/components/saving-button";
 
 type CalendarEvent = {
     id: string;
@@ -88,7 +88,7 @@ function parseEventsFromChildren(
     return events;
 }
 
-export function CalendarEditor({ widget, parsedData, childWidgets }: CalendarEditorProps) {
+export function CalendarEditor({ widget, parsedData, childWidgets, group }: CalendarEditorProps) {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
     const [selectedDay, setSelectedDay] = useState<Date | undefined>(new Date());
 
@@ -224,19 +224,22 @@ export function CalendarEditor({ widget, parsedData, childWidgets }: CalendarEdi
                     Dashboard
                 </Link>
                 <div className="flex items-center gap-2">
-                    {saveStatus === 'saved' && (
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Check className="size-3" />
-                            Saved
+                    {group && (
+                        <span
+                            className="flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium"
+                            style={{
+                                color: group.color,
+                                borderColor: group.color,
+                                backgroundColor: 'white',
+                            }}
+                        >
+                            {group.name}
                         </span>
                     )}
-                    <Button
-                        onClick={form.handleSubmit(onSubmit)}
-                        disabled={saveStatus === 'saving'}
-                        size="sm"
-                    >
-                        {saveStatus === 'saving' ? 'Saving...' : 'Save'}
-                    </Button>
+                    <SaveWidgetButton
+                        saveStatus={saveStatus}
+                        onClickAction={form.handleSubmit(onSubmit)}
+                    />
                 </div>
             </div>
 

@@ -23,7 +23,7 @@ import {
     type SpinnerEditorFormValues
 } from '@/modules/widgets/schemas';
 import type { SpinnerEditorProps } from './widget-editor-props';
-import {useWidgetSaveMutation} from "@/modules/widgets/components/saving-button";
+import {SaveWidgetButton, useWidgetSaveMutation} from "@/modules/widgets/components/saving-button";
 
 const INTERVAL_OPTIONS = [
     { value: 'none', label: 'No interval' },
@@ -112,19 +112,10 @@ export function SpinnerEditor({ widget, parsedData, group }: SpinnerEditorProps)
                             {group.name}
                         </span>
                     )}
-                    {saveStatus === 'saved' && (
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Check className="size-3" />
-                            Saved
-                        </span>
-                    )}
-                    <Button
-                        onClick={form.handleSubmit(onSubmit)}
-                        disabled={saveStatus === 'saving'}
-                        size="sm"
-                    >
-                        {saveStatus === 'saving' ? 'Saving...' : 'Save'}
-                    </Button>
+                    <SaveWidgetButton
+                        saveStatus={saveStatus}
+                        onClickAction={form.handleSubmit(onSubmit)}
+                    />
                 </div>
             </div>
 
