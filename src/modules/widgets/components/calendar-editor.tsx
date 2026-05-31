@@ -19,6 +19,7 @@ import {
     type CalendarManualEvent,
 } from '@/modules/widgets/schemas';
 import type { CalendarEditorProps } from './widget-editor-props';
+import {useWidgetSaveMutation} from "@/modules/widgets/components/saving-button";
 
 type CalendarEvent = {
     id: string;
@@ -197,22 +198,20 @@ export function CalendarEditor({ widget, parsedData, childWidgets }: CalendarEdi
         );
     };
 
-    const onSubmit = async (values: CalendarEditorFormValues) => {
-        setSaveStatus('saving');
-        try {
-            await updateCalendarWidgetAction({
-                widgetId: widget.id,
-                title: values.title,
-                excludedWidgetIds: values.excludedWidgetIds,
-                manualEvents: values.manualEvents,
-                widgetColors,
-            });
-            setSaveStatus('saved');
-            setTimeout(() => setSaveStatus('idle'), 2000);
-        } catch {
-            setSaveStatus('idle');
-        }
-    };
+    const updateCalendarMutation = useWidgetSaveMutation({
+        mutationFn: async (values: CalendarEditorFormValues) => await updateCalendarWidgetAction({
+            widgetId: widget.id,
+            title: values.title,
+            excludedWidgetIds: values.excludedWidgetIds,
+            manualEvents: values.manualEvents,
+            widgetColors,
+        }),
+        setSaveStatus: setSaveStatus,
+    })
+
+    const onSubmit = async (values: CalendarEditorFormValues) =>
+        await updateCalendarMutation.mutateAsync(values);
+
 
     return (
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">

@@ -8,9 +8,14 @@ import { ArrowLeft, Check } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { updateNoteWidgetAction } from '@/modules/widgets/actions';
-import { noteEditorFormSchema, type NoteEditorFormValues } from '@/modules/widgets/schemas';
+import {updateChecklistWidgetAction, updateNoteWidgetAction} from '@/modules/widgets/actions';
+import {
+    type ChecklistEditorFormValues,
+    noteEditorFormSchema,
+    type NoteEditorFormValues
+} from '@/modules/widgets/schemas';
 import type { NotesEditorProps } from './widget-editor-props';
+import {useWidgetSaveMutation} from "@/modules/widgets/components/saving-button";
 
 export const NotesEditor = ({ widget, parsedData, group }: NotesEditorProps) => {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
@@ -25,20 +30,17 @@ export const NotesEditor = ({ widget, parsedData, group }: NotesEditorProps) => 
         },
     });
 
-    const onSubmit = async (values: NoteEditorFormValues) => {
-        setSaveStatus('saving');
-        try {
-            await updateNoteWidgetAction({
-                widgetId: widget.id,
-                title: values.title,
-                content: values.content,
-            });
-            setSaveStatus('saved');
-            setTimeout(() => setSaveStatus('idle'), 2000);
-        } catch {
-            setSaveStatus('idle');
-        }
-    };
+    const updateNotesMutation = useWidgetSaveMutation({
+        mutationFn: async (values: NoteEditorFormValues) => await updateNoteWidgetAction({
+            widgetId: widget.id,
+            title: values.title,
+            content: values.content,
+        }),
+        setSaveStatus: setSaveStatus,
+    });
+
+    const onSubmit = async (values: NoteEditorFormValues) =>
+        await updateNotesMutation.mutateAsync(values);
 
     return (
         <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
