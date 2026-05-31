@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { ArrowLeft, CalendarDays, Plus, Trash2, X } from 'lucide-react';
@@ -36,6 +36,11 @@ export function ChecklistEditor({ widget, parsedData, group }: ChecklistEditorPr
     });
 
     const { fields, append, remove } = useFieldArray({
+        control: form.control,
+        name: 'items',
+    });
+
+    const todosWatch = useWatch({
         control: form.control,
         name: 'items',
     });
@@ -107,12 +112,13 @@ export function ChecklistEditor({ widget, parsedData, group }: ChecklistEditorPr
 
                 <div className="flex flex-col gap-2">
                     {fields.map((field, index) => {
-                        const dueDate = form.watch(`items.${index}.dueDate`);
+                        const completed = todosWatch[index]?.completed ?? false;
+                        const dueDate = todosWatch[index]?.dueDate ?? null;
                         return (
                             <div key={field.id} className="flex items-center gap-3">
                                 <input
                                     type="checkbox"
-                                    checked={form.watch(`items.${index}.completed`)}
+                                    checked={completed}
                                     onChange={(e) =>
                                         form.setValue(`items.${index}.completed`, e.target.checked)
                                     }
