@@ -21,6 +21,7 @@ import { widgetNameSchema } from '@/modules/widgets/schemas';
 import type { Widget as WidgetRecord } from '@/lib/db/schemas/widgets';
 import type { Group } from '@/modules/groups/schemas';
 import { createWidgetAction, addExistingWidgetAction } from '@/modules/dashboard/actions';
+import { ExistingWidgetItem } from './existing-widget-item';
 
 const PRIVATE_VALUE = 'private';
 
@@ -97,32 +98,14 @@ export const AddWidgetDialog = ({
                                 </p>
                             ) : (
                                 <div className="flex flex-col gap-2">
-                                    {availableGroupWidgets.map((w) => {
-                                        const group = userGroups.find((g) => g.id === w.groupId);
-                                        return (
-                                            <button
-                                                key={w.id}
-                                                onClick={() => handleAddExisting(w.id)}
-                                                className="flex items-center justify-between rounded-md p-2 text-left text-sm transition-colors hover:bg-muted"
-                                            >
-                                                <span className="truncate font-medium">
-                                                    {w.name}
-                                                </span>
-                                                {group && (
-                                                    <span
-                                                        className="ml-2 flex shrink-0 items-center rounded-full border px-1.5 py-0.5 text-[10px] font-medium"
-                                                        style={{
-                                                            color: group.color,
-                                                            borderColor: group.color,
-                                                            backgroundColor: 'white',
-                                                        }}
-                                                    >
-                                                        {group.name}
-                                                    </span>
-                                                )}
-                                            </button>
-                                        );
-                                    })}
+                                    {availableGroupWidgets.map((w) => (
+                                        <ExistingWidgetItem
+                                            key={w.id}
+                                            widget={w}
+                                            group={userGroups.find((g) => g.id === w.groupId)}
+                                            onAdd={handleAddExisting}
+                                        />
+                                    ))}
                                 </div>
                             )}
                         </ScrollArea>
