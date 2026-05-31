@@ -35,6 +35,7 @@ type DashboardGridProps = {
     availableGroupWidgets: WidgetRecord[];
     userGroups: Group[];
     parsedDataMap: Record<string, ParsedWidgetData>;
+    calendarChildWidgetsMap: Record<string, ChildWidget[]>;
 };
 
 const buildPreview = (
@@ -69,6 +70,7 @@ export const DashboardGrid = ({
     availableGroupWidgets,
     userGroups,
     parsedDataMap,
+    calendarChildWidgetsMap,
 }: DashboardGridProps) => {
     const [addDialogOpen, setAddDialogOpen] = useState(false);
     const [items, setItems] = useState(widgets);
@@ -130,20 +132,7 @@ export const DashboardGrid = ({
                         const parsedData = parsedDataMap[item.widgetId] ?? null;
                         const childWidgets =
                             item.widget.type === 'calendar'
-                                ? items
-                                      .filter((other) => {
-                                          if (other.widgetId === item.widgetId) return false;
-                                          if (!['checklist', 'spinner'].includes(other.widget.type))
-                                              return false;
-                                          if (item.widget.groupId) {
-                                              return other.widget.groupId === item.widget.groupId;
-                                          }
-                                          return other.widget.visibility === 'private';
-                                      })
-                                      .map((other) => ({
-                                          id: other.widgetId,
-                                          parsedData: parsedDataMap[other.widgetId] ?? null,
-                                      }))
+                                ? calendarChildWidgetsMap[item.widgetId]
                                 : undefined;
 
                         return (
