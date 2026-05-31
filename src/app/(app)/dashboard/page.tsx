@@ -1,7 +1,11 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
-import { getUserDashboardWidgets, buildParsedDataMap } from '@/modules/dashboard/queries';
+import {
+    getUserDashboardWidgets,
+    buildParsedDataMap,
+    getCalendarChildWidgetsMap,
+} from '@/modules/dashboard/queries';
 import { getAvailableGroupWidgetsForUser } from '@/modules/widgets/queries';
 import { getGroupsByUserId } from '@/modules/groups/queries';
 import { DashboardGrid } from '@/modules/dashboard/components/dashboard-grid';
@@ -26,6 +30,7 @@ const DashboardPage = async () => {
     ]);
 
     const parsedDataMap = buildParsedDataMap(widgets);
+    const calendarChildWidgetsMap = getCalendarChildWidgetsMap(widgets, parsedDataMap);
 
     return (
         <DashboardGrid
@@ -33,6 +38,7 @@ const DashboardPage = async () => {
             availableGroupWidgets={availableGroupWidgets}
             userGroups={userGroups}
             parsedDataMap={parsedDataMap}
+            calendarChildWidgetsMap={calendarChildWidgetsMap}
         />
     );
 };
