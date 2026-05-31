@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { addDays, format, isSameDay, parseISO } from 'date-fns';
@@ -117,8 +117,14 @@ export function CalendarEditor({ widget, parsedData, childWidgets, group }: Cale
         },
     });
 
-    const excludedWidgetIds = form.watch('excludedWidgetIds');
-    const manualEvents = form.watch('manualEvents');
+    const excludedWidgetIds = useWatch({
+        control: form.control,
+        name: 'excludedWidgetIds',
+    });
+    const manualEvents = useWatch({
+        control: form.control,
+        name: 'manualEvents',
+    });
 
     const childEvents = parseEventsFromChildren(childWidgets, excludedWidgetIds);
     const allManualEvents: CalendarEvent[] = manualEvents.map((e) => ({

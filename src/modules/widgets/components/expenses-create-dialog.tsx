@@ -1,5 +1,5 @@
 import { createExpenseFormSchema, type Expense } from '@/modules/widgets/schemas';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
@@ -54,7 +54,10 @@ export const CreateExpenseDialog = ({
         },
     });
 
-    const payedForValues = form.watch('payedFor') ?? [];
+    const payedForValues = useWatch({
+        control: form.control,
+        name: 'payedFor',
+    });
 
     const togglePayedFor = (memberId: string) => {
         const current = form.getValues(`payedFor`);
