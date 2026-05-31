@@ -5,7 +5,7 @@ import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { addDays, parseISO } from 'date-fns';
-import { ArrowLeft, Check, ChevronRight, Plus, Trash2, Users } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Plus, Trash2, Users } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -16,14 +16,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import {advanceSpinnerAction, updateChecklistWidgetAction, updateSpinnerWidgetAction} from '@/modules/widgets/actions';
-import {
-    type ChecklistEditorFormValues,
-    spinnerEditorFormSchema,
-    type SpinnerEditorFormValues
-} from '@/modules/widgets/schemas';
+import { advanceSpinnerAction, updateSpinnerWidgetAction } from '@/modules/widgets/actions';
+import { spinnerEditorFormSchema, type SpinnerEditorFormValues } from '@/modules/widgets/schemas';
 import type { SpinnerEditorProps } from './widget-editor-props';
-import {SaveWidgetButton, useWidgetSaveMutation} from "@/modules/widgets/components/saving-button";
+import {
+    SaveWidgetButton,
+    useWidgetSaveMutation,
+} from '@/modules/widgets/components/saving-button';
 
 const INTERVAL_OPTIONS = [
     { value: 'none', label: 'No interval' },
@@ -76,13 +75,14 @@ export function SpinnerEditor({ widget, parsedData, group }: SpinnerEditorProps)
     };
 
     const updateSpinnerMutation = useWidgetSaveMutation({
-        mutationFn: async (values: SpinnerEditorFormValues) => await updateSpinnerWidgetAction({
-            widgetId: widget.id,
-            title: values.title,
-            items: values.items.map((i) => i.text),
-            intervalDays: values.intervalDays === 'none' ? null : Number(values.intervalDays),
-            lastTriggered: null,
-        }),
+        mutationFn: async (values: SpinnerEditorFormValues) =>
+            await updateSpinnerWidgetAction({
+                widgetId: widget.id,
+                title: values.title,
+                items: values.items.map((i) => i.text),
+                intervalDays: values.intervalDays === 'none' ? null : Number(values.intervalDays),
+                lastTriggered: null,
+            }),
         setSaveStatus: setSaveStatus,
     });
 

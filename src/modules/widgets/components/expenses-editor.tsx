@@ -4,18 +4,18 @@ import type { ExpensesEditorProps } from '@/modules/widgets/components/widget-ed
 import {
     expensesWidgetFormSchema,
     type Expense,
-    type ExpensesWidgetForm, type ChecklistEditorFormValues,
+    type ExpensesWidgetForm,
 } from '@/modules/widgets/schemas';
 import { useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
-import { ArrowLeft, Check, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useSession } from 'next-auth/react';
 import { userSchema } from '@/modules/users/schemas';
-import {updateChecklistWidgetAction, updateExpensesWidgetAction} from '@/modules/widgets/actions';
+import { updateExpensesWidgetAction } from '@/modules/widgets/actions';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -32,7 +32,10 @@ import { ExpensesChart } from '@/modules/widgets/components/expenses-chart';
 import { ExpensesDebts } from '@/modules/widgets/components/expenses-debts';
 import { ExpensesFilter, ExpensesFilterValues } from '@/modules/widgets/components/expenses-filter';
 import { Separator } from '@/components/ui/separator';
-import {SaveWidgetButton, useWidgetSaveMutation} from "@/modules/widgets/components/saving-button";
+import {
+    SaveWidgetButton,
+    useWidgetSaveMutation,
+} from '@/modules/widgets/components/saving-button';
 
 export type { Expense, ExpensesWidgetForm };
 
@@ -66,6 +69,16 @@ export const ExpensesEditor = ({ widget, parsedData, group }: ExpensesEditorProp
         name: 'expenses',
     });
 
+    const updateExpensesMutation = useWidgetSaveMutation({
+        mutationFn: async (values: ExpensesWidgetForm) =>
+            await updateExpensesWidgetAction({
+                widgetId: widget.id,
+                title: values.title,
+                expenses: values.expenses,
+            }),
+        setSaveStatus: setSaveStatus,
+    });
+
     const filteredFields = fields.filter((field) => {
         if (filter.type === 'expenses' && field.isReimbursement) return false;
         if (filter.type === 'reimbursements' && !field.isReimbursement) return false;
@@ -89,15 +102,6 @@ export const ExpensesEditor = ({ widget, parsedData, group }: ExpensesEditorProp
         setCreateReimbursement(true);
         setCreateExpenseOpen(true);
     };
-
-    const updateExpensesMutation = useWidgetSaveMutation({
-        mutationFn: async (values: ExpensesWidgetForm) => await updateExpensesWidgetAction({
-            widgetId: widget.id,
-            title: values.title,
-            expenses: values.expenses,
-        }),
-        setSaveStatus: setSaveStatus,
-    });
 
     const onSubmit = async (values: ExpensesWidgetForm) =>
         await updateExpensesMutation.mutateAsync(values);
