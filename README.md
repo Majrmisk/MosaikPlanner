@@ -1,6 +1,18 @@
 # MosaikPlanner
 A modular task management web app where users build personal or shared group dashboards using a variety of interactive widgets.
 
+## Technologies Used
+
+| Category | Technologies |
+|----------|-------------|
+| **Frontend** | Next.js, React, TypeScript, Tailwind CSS |
+| **UI Components** | shadcn/ui, Radix UI, Lucide React, Recharts |
+| **Data & Forms** | TanStack Query, React Hook Form, Zod |
+| **Database** | Turso (libSQL), Drizzle ORM |
+| **Authentication** | NextAuth, GitHub OAuth |
+| **Features** | dnd-kit, react-day-picker, next-themes, date-fns |
+| **Development** | pnpm, ESLint, Prettier |
+
 ## Specification
 The main page is a dashboard of overview widget panes that you can add / remove / reorder.
 
